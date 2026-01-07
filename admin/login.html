@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Painel Administrativo</title>
+    <link rel="stylesheet" href="/css/admin-style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-lock"></i> Painel Administrativo</h1>
+                <p>Acesso restrito aos administradores do sistema</p>
+            </div>
+            
+            <div class="login-body">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username"><i class="fas fa-user"></i> Usuário</label>
+                        <input type="text" id="username" placeholder="Digite seu usuário" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-key"></i> Senha</label>
+                        <input type="password" id="password" placeholder="Digite sua senha" required>
+                    </div>
+                    
+                    <div id="loginMessage" class="message" style="display: none;"></div>
+                    
+                    <button type="submit" class="login-btn" id="loginButton">
+                        <span>Entrar no Painel</span>
+                        <span><i class="fas fa-arrow-right"></i></span>
+                    </button>
+                    
+                    <div class="login-footer">
+                        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para o site</a>
+                        <span class="version">v1.0</span>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="login-warning">
+                <i class="fas fa-exclamation-triangle"></i> Esta área é restrita. Acesso permitido apenas para administradores autorizados.
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/admin-login.js"></script>
+</body>
+</html>

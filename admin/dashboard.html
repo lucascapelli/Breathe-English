@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel Admin - Controle de Vagas</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/admin-style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" role="navigation" aria-label="Sidebar">
+      <div class="sidebar-header">
+        <h2>🏢 Painel Admin</h2>
+        <p>Controle de Vagas</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Menu principal">
+        <button type="button" class="nav-item active" data-section="dashboard" aria-controls="dashboard">
+          <i class="fas fa-chart-bar"></i>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" class="nav-item" data-section="vagas" aria-controls="vagas">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Gerenciar Vagas</span>
+        </button>
+        <button type="button" class="nav-item" data-section="reservas" aria-controls="reservas">
+          <i class="fas fa-users"></i>
+          <span>Reservas</span>
+        </button>
+        <button type="button" class="nav-item" data-section="config" aria-controls="config">
+          <i class="fas fa-cog"></i>
+          <span>Configurações</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">A</div>
+          <div class="user-details">
+            <strong>Administrador</strong>
+            <small>admin@guyfawk3s33</small>
+          </div>
+        </div>
+        <button id="logoutBtn" class="logout-btn" type="button" aria-label="Sair do painel">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="main-header">
+        <h1 id="sectionTitle">Dashboard</h1>
+        <div class="header-actions">
+          <button id="atualizarBtn" class="btn btn-primary" type="button" aria-label="Atualizar">
+            <i class="fas fa-sync-alt"></i> Atualizar
+          </button>
+          <button id="exportarBtn" class="btn btn-secondary" type="button" aria-label="Exportar">
+            <i class="fas fa-download"></i> Exportar
+          </button>
+        </div>
+      </header>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active" role="region" aria-labelledby="sectionTitle">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #3b82f6;"><i class="fas fa-calendar"></i></div>
+            <div class="stat-info">
+              <h3 id="totalVagasAdmin">0</h3>
+              <p>Total de Vagas</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #10b981;"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+              <h3 id="vagasDisponiveisAdmin">0</h3>
+              <p>Vagas Disponíveis</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #f59e0b;"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+              <h3 id="reservasConfirmadas">0</h3>
+              <p>Reservas Confirmadas</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon" style="background: #ef4444;"><i class="fas fa-fire"></i></div>
+            <div class="stat-info">
+              <h3 id="vagasEsgotadas">0</h3>
+              <p>Vagas Esgotadas</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h2>Ações Rápidas</h2>
+          <div class="actions-grid">
+            <button id="btnNovaVaga" class="action-btn" data-action="abrir-nova-vaga" type="button">
+              <i class="fas fa-plus-circle"></i>
+              <span>Adicionar Nova Vaga</span>
+            </button>
+
+            <button id="btnResetVagas" class="action-btn" data-action="resetar-vagas" type="button">
+              <i class="fas fa-redo"></i>
+              <span>Resetar Todas as Vagas</span>
+            </button>
+
+            <button id="btnVerReservas" class="action-btn" data-action="ver-reservas" type="button">
+              <i class="fas fa-list"></i>
+              <span>Ver Todas as Reservas</span>
+            </button>
+
+            <button id="btnConfig" class="action-btn" data-action="abrir-config" type="button">
+              <i class="fas fa-key"></i>
+              <span>Alterar Senha</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="recent-activity">
+          <h2>Atividade Recente</h2>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+      </section>
+
+      <!-- Gerenciar Vagas Section -->
+      <section id="vagas" class="section" role="region" aria-label="Gerenciar Vagas">
+        <div class="section-header">
+          <h2>Gerenciar Vagas</h2>
+          <button id="abrirNovaVagaBtn" class="btn btn-primary" type="button">
+            <i class="fas fa-plus"></i> Nova Vaga
+          </button>
+        </div>
+
+        <div class="vagas-list" id="adminVagasList"></div>
+      </section>
+
+      <!-- Reservas Section -->
+      <section id="reservas" class="section" role="region" aria-label="Reservas">
+        <div class="section-header">
+          <h2>Reservas Realizadas</h2>
+          <div class="search-box">
+            <input type="text" placeholder="Buscar reserva..." id="searchReserva" />
+            <i class="fas fa-search" aria-hidden="true"></i>
+          </div>
+        </div>
+
+        <div class="reservas-table-container">
+          <table class="reservas-table" aria-describedby="Reservas realizadas">
+            <thead>
+              <tr>
+                <th>ID</th><th>Nome</th><th>Email</th><th>Turma</th><th>Data</th><th>Status</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="reservasTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Configurações Section -->
+      <section id="config" class="section" role="region" aria-label="Configurações">
+        <div class="section-header"><h2>Configurações</h2></div>
+
+        <div class="config-grid">
+          <div class="config-card">
+            <h3><i class="fas fa-key"></i> Alterar Senha</h3>
+            <form id="changePasswordForm">
+              <div class="form-group">
+                <label for="currentPassword">Senha Atual</label>
+                <input type="password" id="currentPassword" required />
+              </div>
+              <div class="form-group">
+                <label for="newPassword">Nova Senha</label>
+                <input type="password" id="newPassword" required minlength="6" />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirmar Nova Senha</label>
+                <input type="password" id="confirmPassword" required />
+              </div>
+              <button id="changePasswordBtn" type="submit" class="btn btn-primary">Alterar Senha</button>
+            </form>
+          </div>
+
+          <div class="config-card">
+            <h3><i class="fas fa-bell"></i> Notificações</h3>
+            <div class="checkbox-group">
+              <label class="checkbox-label"><input type="checkbox" id="notifyEmailNewReservation" checked /> <span>Email para novas reservas</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="notifyVagasEsgotadas" checked /> <span>Alerta de vagas esgotadas</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="notifyRelatorioDiario" /> <span>Relatório diário</span></label>
+            </div>
+          </div>
+
+          <div class="config-card">
+            <h3><i class="fas fa-database"></i> Backup</h3>
+            <p>Faça backup de todos os dados do sistema</p>
+            <div class="backup-actions">
+              <button id="exportBackupBtn" class="btn btn-secondary" type="button"> <i class="fas fa-download"></i> Exportar Backup</button>
+              <button id="importBackupBtn" class="btn btn-outline" type="button"> <i class="fas fa-upload"></i> Importar Backup</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal Nova Vaga -->
+  <div id="novaVagaModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2><i class="fas fa-plus"></i> Adicionar Nova Vaga</h2>
+      <form id="novaVagaForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="novaTitulo">Título *</label>
+            <input type="text" id="novaTitulo" required placeholder="Ex: Segunda e Quarta - 19:00" />
+          </div>
+          <div class="form-group">
+            <label for="novaHorario">Horário *</label>
+            <input type="text" id="novaHorario" required placeholder="Ex: 19:00 - 20:00" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="novaDias">Dias *</label>
+            <input type="text" id="novaDias" required placeholder="Ex: Segunda e Quarta" />
+          </div>
+          <div class="form-group">
+            <label for="novaNivel">Nível *</label>
+            <select id="novaNivel" required>
+              <option value="">Selecione...</option>
+              <option value="Iniciante">Iniciante</option>
+              <option value="Básico">Básico</option>
+              <option value="Intermediário">Intermediário</option>
+              <option value="Avançado">Avançado</option>
+              <option value="Conversação">Conversação</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="novaProfessor">Professor *</label>
+            <select id="novaProfessor" required><option value="">Selecione...</option></select>
+          </div>
+          <div class="form-group">
+            <label for="novaTipo">Tipo *</label>
+            <input type="text" id="novaTipo" required placeholder="Ex: VAGA SUPER LIMITADA" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="novaTotal">Total de Vagas *</label>
+            <input type="number" id="novaTotal" required min="1" value="2" />
+          </div>
+          <div class="form-group">
+            <label for="novaDisponiveis">Vagas Disponíveis *</label>
+            <input type="number" id="novaDisponiveis" required min="0" value="2" />
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="cancelNovaVagaBtn" type="button" class="btn btn-outline">Cancelar</button>
+          <button id="saveNovaVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Vaga</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar Vaga -->
+  <div id="editarVagaModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2><i class="fas fa-edit"></i> Editar Vaga</h2>
+      <form id="editarVagaForm">
+        <input type="hidden" id="editarId" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editarTitulo">Título *</label>
+            <input type="text" id="editarTitulo" required />
+          </div>
+          <div class="form-group">
+            <label for="editarHorario">Horário *</label>
+            <input type="text" id="editarHorario" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editarDias">Dias *</label>
+            <input type="text" id="editarDias" required />
+          </div>
+          <div class="form-group">
+            <label for="editarNivel">Nível *</label>
+            <select id="editarNivel" required>
+              <option value="Iniciante">Iniciante</option>
+              <option value="Básico">Básico</option>
+              <option value="Intermediário">Intermediário</option>
+              <option value="Avançado">Avançado</option>
+              <option value="Conversação">Conversação</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editarProfessor">Professor *</label>
+            <select id="editarProfessor" required><option value="">Selecione...</option></select>
+          </div>
+          <div class="form-group">
+            <label for="editarTipo">Tipo *</label>
+            <input type="text" id="editarTipo" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editarTotal">Total de Vagas *</label>
+            <input type="number" id="editarTotal" required min="1" />
+          </div>
+          <div class="form-group">
+            <label for="editarDisponiveis">Vagas Disponíveis *</label>
+            <input type="number" id="editarDisponiveis" required min="0" />
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="cancelEditarVagaBtn" type="button" class="btn btn-outline">Cancelar</button>
+          <button id="saveEditarVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Atualizar Vaga</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="/js/admin-script.js" defer></script>
+  <script src="/js/mobile.js" defer></script>
+  <!-- Adicione isto antes do fechamento do body -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+  <i class="fas fa-bars"></i>
+</button>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "sistema-vagas-aulas-ingles",
+  "version": "1.0.0",
+  "description": "Sistema de reserva de vagas para aulas de inglês",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "express-mysql-session": "^3.0.3",
+    "express-rate-limit": "^6.11.2",
+    "express-session": "^1.18.2",
+    "helmet": "^7.2.0",
+    "mysql2": "^3.16.0",
+    "node-fetch": "^2.7.0",
+    "nodemailer": "^7.0.12"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

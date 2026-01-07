@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vagas para Aulas de Inglês - Reserve Agora!</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Vagas LIMITADAS para Aulas de Inglês</h1>
+            <p>Reserve seu horário agora mesmo - Últimas oportunidades!</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <div class="total-vagas">
+                    Vagas disponíveis: <span id="totalVagas">0</span>
+                </div>
+                <div class="countdown-warning">
+                    ⚠️ URGENTE: VAGAS ESTÃO ACABANDO!
+                </div>
+            </div>
+
+            <div class="vagas-grid" id="vagasGrid">
+                <!-- Vagas serão geradas via JavaScript -->
+            </div>
+        </div>
+
+        <div id="successMessage" class="success-message">
+            <h3>🎉 Parabéns! Reserva confirmada!</h3>
+            <p>Em breve entraremos em contato para confirmar os detalhes da sua aula.</p>
+        </div>
+
+        <!-- Modal de Reserva -->
+        <div id="reservaModal" class="modal">
+            <div class="modal-content">
+                <h2>Confirmar Reserva</h2>
+                <p>Preencha seus dados para reservar esta vaga:</p>
+
+                <div class="modal-info" id="modalInfo">
+                    <!-- Informações da vaga -->
+                </div>
+
+                <form id="reservaForm">
+                    <div class="form-group">
+                        <label for="nome">Nome completo *</label>
+                        <input type="text" id="nome" required placeholder="Seu nome completo">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail *</label>
+                        <input type="email" id="email" required placeholder="seu@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefone">WhatsApp *</label>
+                        <input type="tel" id="telefone" required placeholder="(11) 99999-9999">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nivel">Qual seu nível de inglês? *</label>
+                        <select id="nivel" required>
+                            <option value="">Selecione seu nível</option>
+                            <option value="Iniciante">Iniciante (não sei nada ou sei pouco)</option>
+                            <option value="Basico">Básico (consigo me apresentar e falar frases simples)</option>
+                            <option value="Intermediario">Intermediário (consigo conversar sobre assuntos do dia a dia)
+                            </option>
+                            <option value="Avançado">Avançado (consigo me expressar bem, mas quero aperfeiçoar)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="objetivo">Qual seu principal objetivo com as aulas? *</label>
+                        <textarea id="objetivo" required placeholder="Ex: Viagem, trabalho, vestibular, etc."
+                            rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group checkbox">
+                        <input type="checkbox" id="termos" required>
+                        <label for="termos">Concordo em receber informações sobre as aulas e confirmo que esta reserva é
+                            limitada e sujeita à disponibilidade.</label>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="modal-button cancelar" onclick="fecharModal()">Cancelar</button>
+                        <button type="submit" class="modal-button confirmar">
+                            <span class="button-text">RESERVAR MINHA VAGA</span>
+                            <span class="button-icon">🎯</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <!-- Botão Flutuante do WhatsApp -->
+        <div class="whatsapp-float" onclick="abrirWhatsApp()">
+            <i class="fab fa-whatsapp" style="font-size: 32px;"></i>
+            <span>Dúvidas? Fale conosco</span>
+        </div>
+
+        <script src="/js/script.js"></script>
+</body>
+
+</html>
