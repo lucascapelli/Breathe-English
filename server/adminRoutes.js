@@ -50,29 +50,7 @@ async function obterVagaComProfessor(id) {
   `, [id]);
 }
 
-// =====================
-// UPLOAD PROFESSORES
-// =====================
-const fotosDir = path.resolve(__dirname, '..', 'admin', 'uploads', 'professores');
-if (!fs.existsSync(fotosDir)) fs.mkdirSync(fotosDir, { recursive: true });
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_, __, cb) => cb(null, fotosDir),
-    filename: (_, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`);
-    }
-  }),
-  limits: UPLOAD_CONFIG.limits,
-  fileFilter: (_, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!UPLOAD_CONFIG.allowedFormats.includes(ext)) {
-      return cb(new Error(UPLOAD_CONFIG.errorMessage));
-    }
-    cb(null, true);
-  }
-});
 
 // =====================
 // DASHBOARD
@@ -282,6 +260,30 @@ router.post('/reservas/:reserva_id/confirm', async (req, res) => {
 });
 
 // =====================
+// UPLOAD PROFESSORES
+// =====================
+const fotosDir = path.resolve(__dirname, '..', 'admin', 'uploads', 'professores');
+if (!fs.existsSync(fotosDir)) fs.mkdirSync(fotosDir, { recursive: true });
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_, __, cb) => cb(null, fotosDir),
+    filename: (_, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`);
+    }
+  }),
+  limits: UPLOAD_CONFIG.limits,
+  fileFilter: (_, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!UPLOAD_CONFIG.allowedFormats.includes(ext)) {
+      return cb(new Error(UPLOAD_CONFIG.errorMessage));
+    }
+    cb(null, true);
+  }
+});
+
+// =====================
 // PROFESSORES (CASCADE)
 // =====================
 router.get('/professores', async (_, res) => {
@@ -339,6 +341,43 @@ router.delete('/professores/:id', async (req, res) => {
     res.status(500).json({ error: 'Erro interno' });
   }
 });
+router.put('/professores/:id', upload.single('foto'), async (req, res) => {
+  const { id } = req.params;
+  const { nome, email, telefone, observacoes, preco } = req.body;
+
+  const professor = await obterProfessor(id);
+  if (!professor) {
+    return res.status(404).json({ error: 'Professor não encontrado' });
+  }
+
+  let foto = professor.foto;
+  if (req.file) {
+    foto = `/uploads/professores/${req.file.filename}`;
+  }
+
+  await execute(
+    `UPDATE professores SET
+      nome = ?,
+      email = ?,
+      telefone = ?,
+      observacoes = ?,
+      preco = ?,
+      foto = ?
+     WHERE id = ?`,
+    [
+      nome,
+      email || '',
+      telefone || '',
+      observacoes || '',
+      preco || null,
+      foto,
+      id
+    ]
+  );
+
+  res.json(await obterProfessor(id));
+});
+
 
 // =====================
 // ALTERAR SENHA
