@@ -23,5 +23,11 @@ build/
 .vscode/
 .idea/
 
-# Uploads temporários (se existir no futuro)
+# Uploads temporários
 uploads/
+
+# Backups
+backup/
+*.sql
+*.dump
+*.bak

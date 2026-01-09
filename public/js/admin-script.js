@@ -291,8 +291,15 @@
         <td><span class="status-badge status-${r.status}">${r.status || 'pendente'}</span></td>
         <td>
           <div class="table-actions">
-            ${r.status === 'pendente' ? `<button class="btn-small btn-success" data-action="confirm-reserva" data-reserva-id="${r.reserva_id}">Confirmar</button>` : ''}
-            <button class="btn-icon" data-action="view-reserva" data-id="${r.id}"><i class="fas fa-eye"></i></button>
+            ${r.status === 'pendente' ? 
+              `<button class="btn-small btn-success" data-action="confirm-reserva" data-reserva-id="${r.reserva_id}">Confirmar</button>` 
+              : ''}
+            <button class="btn-icon" data-action="view-reserva" data-id="${r.id}" title="Visualizar">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon btn-danger" data-action="delete-reserva" data-id="${r.id}" title="Excluir">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
         </td>
       </tr>
@@ -313,16 +320,39 @@
   }
 
   async function deleteProfessor(id) {
-    if (!confirm('Tem certeza que deseja excluir este professor?')) return;
-    try {
-      await api.delete(`/professores/${id}`);
-      showAlert('Professor excluído com sucesso!', 'success');
-      await loadProfessores();
-    } catch (err) {
-      console.error(err);
+  if (
+    !confirm(
+      'Tem certeza que deseja excluir este professor?\n\n' +
+      'ATENÇÃO: Todas as vagas e reservas associadas a este professor também serão excluídas.'
+    )
+  ) return;
+
+  try {
+    const res = await api.delete(`/professores/${id}`);
+
+    showAlert(
+      res.message || 'Professor excluído com sucesso!',
+      'success'
+    );
+
+    // 🔄 Recarregar TUDO (cascade afeta vagas e reservas)
+    await Promise.all([
+      loadProfessores(),
+      loadVagas(),
+      loadReservas(),
+      loadDashboardStats()
+    ]);
+
+  } catch (err) {
+    console.error(err);
+
+    if (err.status === 404) {
+      showAlert('Professor não encontrado', 'error');
+    } else {
       showAlert('Erro ao excluir professor', 'error');
     }
   }
+}
 
   // ===== CRUD Vagas =====
   async function createVaga(data) {
@@ -350,6 +380,25 @@
     await Promise.all([loadReservas(), loadDashboardStats()]);
     showAlert('Reserva confirmada', 'success');
     return res;
+  }
+
+  // Função para excluir reserva
+  async function deleteReserva(id) {
+    if (!confirm('Tem certeza que deseja excluir esta reserva?\n\nEsta ação não pode ser desfeita.')) {
+      return;
+    }
+
+    try {
+      const res = await api.delete(`/reservas/${id}`);
+      
+      // Atualizar estatísticas e lista de reservas
+      await Promise.all([loadReservas(), loadDashboardStats()]);
+      showAlert(res.message || 'Reserva excluída com sucesso!', 'success');
+      return res;
+    } catch (err) {
+      console.error(err);
+      showAlert('Erro ao excluir reserva', 'error');
+    }
   }
 
   async function resetAllVagas() {
@@ -436,8 +485,14 @@
       const btn = e.target.closest('[data-action]');
       if (!btn) return;
       e.preventDefault();
+      
       if (btn.dataset.action === 'confirm-reserva' && confirm('Confirmar esta reserva?')) {
         confirmReserva(btn.dataset.reservaId).catch(err => showAlert('Erro: ' + err.message, 'error'));
+      }
+      
+      // Adicionar este bloco para exclusão
+      if (btn.dataset.action === 'delete-reserva') {
+        deleteReserva(btn.dataset.id).catch(err => showAlert('Erro: ' + err.message, 'error'));
       }
     });
 
