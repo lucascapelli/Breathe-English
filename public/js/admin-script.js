@@ -1,91 +1,29 @@
 /**
- * admin-script.js - VERSÃO FINAL CORRIGIDA
+ * admin-script.js - VERSÃO CORRIGIDA (funcionamento completo dos professores)
  */
 (function () {
   'use strict';
 
   console.log('🛠️ DEBUG: Script admin iniciando...');
 
-  // Helpers
-  const $id = id => document.getElementById(id);
-  const $qsa = sel => Array.from(document.querySelectorAll(sel));
-  const $closest = (el, sel) => el.closest(sel);
-  
-  // Função de debug
-  const debug = (...args) => {
-    console.log('%c🔧 ADMIN', 'color:#ff6b6b;font-weight:bold', ...args);
-  };
-
-  // Estado global
+  // ===== Estado único =====
   const adminData = {
     vagas: [],
     reservas: [],
     professores: [],
-    stats: {}
+    stats: {},
+    professorEditando: null
   };
 
-  // ===== API HELPER =====
-  const api = {
-    async get(endpoint) {
-      const response = await fetch(`/api/admin${endpoint}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        const error = new Error(`Erro ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      return response.json();
-    },
+  // ===== Helpers =====
+  const $id = id => document.getElementById(id);
+  const $qsa = sel => Array.from(document.querySelectorAll(sel));
+  const $closest = (el, sel) => el && el.closest ? el.closest(sel) : null;
+  const debug = (...args) => console.log('%c🔧 ADMIN', 'color:#ff6b6b;font-weight:bold', ...args);
 
-    async post(endpoint, data) {
-      const response = await fetch(`/api/admin${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const error = new Error(`Erro ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      return response.json();
-    },
-
-    async put(endpoint, data) {
-      const response = await fetch(`/api/admin${endpoint}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) {
-        const error = new Error(`Erro ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      return response.json();
-    },
-
-    async delete(endpoint) {
-      const response = await fetch(`/api/admin${endpoint}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        const error = new Error(`Erro ${response.status}`);
-        error.status = response.status;
-        throw error;
-      }
-      return response.json();
-    }
-  };
-
-  // ===== FUNÇÕES AUXILIARES =====
   function escapeHtml(text) {
-    if (!text) return '';
-    return text
+    if (text === null || text === undefined) return '';
+    return String(text)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -93,162 +31,246 @@
       .replace(/'/g, '&#039;');
   }
 
-  function closeAllModals() {
-    $qsa('.modal').forEach(modal => {
-      modal.classList.remove('active');
-      modal.setAttribute('aria-hidden', 'true');
-    });
+  function showAlert(message, type = 'info') {
+    $qsa('.fixed-alert').forEach(a => a.remove());
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} fixed-alert`;
+    alertDiv.setAttribute('role', 'status');
+    alertDiv.innerHTML = `<span>${escapeHtml(message)}</span><button aria-label="Fechar">&times;</button>`;
+    alertDiv.querySelector('button').addEventListener('click', () => alertDiv.remove());
+    document.body.appendChild(alertDiv);
+    setTimeout(() => { if (alertDiv.parentElement) alertDiv.remove(); }, 5000);
   }
 
-  function openModal(modalId) {
-    closeAllModals();
-    const modal = $id(modalId);
-    if (modal) {
-      modal.classList.add('active');
-      modal.setAttribute('aria-hidden', 'false');
+  // Função para validar o arquivo de imagem antes de enviar
+  function validarArquivoImagem(file) {
+    // Verificar tamanho (5MB em bytes)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return { valido: false, erro: 'O arquivo é muito grande. Tamanho máximo: 5MB.' };
+    }
+
+    // Verificar extensão
+    const extensoesPermitidas = ['.png', '.jpg', '.jpeg', '.webp'];
+    const nomeArquivo = file.name;
+    const extensao = nomeArquivo.slice(nomeArquivo.lastIndexOf('.')).toLowerCase();
+    if (!extensoesPermitidas.includes(extensao)) {
+      return { valido: false, erro: 'Formato de arquivo inválido. Use apenas PNG, JPG, JPEG ou WEBP.' };
+    }
+
+    return { valido: true };
+  }
+
+  // Função para formatar número de telefone
+  function formatarTelefone(telefone) {
+    // Remove tudo que não é número
+    let numeros = telefone.replace(/\D/g, '');
+    
+    // Limita a 11 dígitos (máximo para celular brasileiro com DDD)
+    numeros = numeros.substring(0, 11);
+    
+    // Aplica a máscara
+    if (numeros.length <= 2) {
+      return numeros;
+    } else if (numeros.length <= 7) {
+      return `(${numeros.substring(0, 2)}) ${numeros.substring(2)}`;
+    } else if (numeros.length <= 10) {
+      return `(${numeros.substring(0, 2)}) ${numeros.substring(2, 6)}-${numeros.substring(6)}`;
+    } else {
+      return `(${numeros.substring(0, 2)}) ${numeros.substring(2, 7)}-${numeros.substring(7)}`;
     }
   }
 
-  function showAlert(message, type = 'info') {
-    // Remove alertas anteriores
-    $qsa('.fixed-alert').forEach(alert => alert.remove());
+  // Função para validar número de telefone de forma mais rigorosa
+  function validarTelefone(telefone) {
+    // Remove formatação
+    const numeros = telefone.replace(/\D/g, '');
     
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} fixed-alert`;
-    alertDiv.innerHTML = `
-      <span>${message}</span>
-      <button onclick="this.parentElement.remove()">&times;</button>
-    `;
-    document.body.appendChild(alertDiv);
+    // Verifica se tem pelo menos 10 dígitos (DDD + número)
+    if (numeros.length < 10) {
+      return { valido: false, erro: 'Número de telefone incompleto. Mínimo 10 dígitos (DDD + número).' };
+    }
     
-    setTimeout(() => {
-      if (alertDiv.parentElement) {
-        alertDiv.remove();
+    // Verifica se tem mais de 11 dígitos (máximo)
+    if (numeros.length > 11) {
+      return { valido: false, erro: 'Número de telefone inválido. Máximo 11 dígitos.' };
+    }
+    
+    // Verifica se o DDD é válido (11 a 99)
+    const ddd = parseInt(numeros.substring(0, 2));
+    if (ddd < 11 || ddd > 99) {
+      return { valido: false, erro: 'DDD inválido. Deve estar entre 11 e 99.' };
+    }
+    
+    // Verifica se o número é composto apenas por dígitos válidos
+    // Primeiro dígito após o DDD deve ser 9 para celular (se for 11 dígitos) ou 2-5 para fixo (se for 10 dígitos)
+    if (numeros.length === 11) {
+      const primeiroNumero = parseInt(numeros.charAt(2));
+      if (primeiroNumero !== 9) {
+        return { valido: false, erro: 'Número de celular inválido. Deve começar com 9 após o DDD.' };
       }
-    }, 5000);
+    } else if (numeros.length === 10) {
+      const primeiroNumero = parseInt(numeros.charAt(2));
+      if (primeiroNumero < 2 || primeiroNumero > 5) {
+        return { valido: false, erro: 'Número fixo inválido. Deve começar com 2 a 5 após o DDD.' };
+      }
+    }
+    
+    // Verifica se há apenas dígitos (dupla verificação)
+    if (!/^\d+$/.test(numeros)) {
+      return { valido: false, erro: 'Telefone deve conter apenas números.' };
+    }
+    
+    return { valido: true };
   }
 
-  // ===== CARREGAMENTO DE DADOS =====
+  function closeAllModals() {
+    $qsa('.modal').forEach(m => {
+      m.classList.remove('active');
+      m.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  function openModal(id) {
+    closeAllModals();
+    const modal = $id(id);
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  // ===== API helper =====
+  const api = {
+    async request(endpoint, opts = {}) {
+      const res = await fetch(`/api/admin${endpoint}`, { credentials: 'include', ...opts });
+      if (!res.ok) {
+        const err = new Error(`Erro ${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    },
+    get: (e) => api.request(e),
+    post: (e, d) => api.request(e, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }),
+    put: (e, d) => api.request(e, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }),
+    delete: (e) => api.request(e, { method: 'DELETE' })
+  };
+
+  // ===== Carregadores =====
   async function loadDashboardStats() {
     try {
-      debug('Carregando estatísticas...');
       const stats = await api.get('/stats');
-      adminData.stats = stats;
-      
-      // CORREÇÃO: IDs CORRETOS conforme o HTML
+      adminData.stats = stats || {};
       $id('totalVagasAdmin') && ($id('totalVagasAdmin').textContent = stats.total_vagas || 0);
-      $id('vagasDisponiveisAdmin') && ($id('vagasDisponiveisAdmin').textContent = (stats.total_vagas - stats.vagas_esgotadas) || 0);
+      $id('vagasDisponiveisAdmin') && ($id('vagasDisponiveisAdmin').textContent = ((stats.total_vagas || 0) - (stats.vagas_esgotadas || 0)));
       $id('reservasConfirmadas') && ($id('reservasConfirmadas').textContent = stats.total_reservas || 0);
       $id('vagasEsgotadas') && ($id('vagasEsgotadas').textContent = stats.vagas_esgotadas || 0);
-      
-      debug('Estatísticas carregadas:', stats);
-    } catch (error) {
-      console.error('Erro ao carregar stats:', error);
+    } catch (err) {
+      console.error('Erro stats', err);
       showAlert('Erro ao carregar estatísticas', 'error');
     }
   }
 
   async function loadVagas() {
     try {
-      debug('Carregando vagas...');
       const vagas = await api.get('/vagas');
-      adminData.vagas = vagas;
-      debug('Vagas carregadas:', vagas.length);
-      renderVagas(vagas);
-    } catch (error) {
-      console.error('Erro ao carregar vagas:', error);
+      adminData.vagas = Array.isArray(vagas) ? vagas : (vagas || []);
+      renderVagas(adminData.vagas);
+    } catch (err) {
+      console.error('Erro vagas', err);
       showAlert('Erro ao carregar vagas', 'error');
+    }
+  }
+
+  async function loadReservas() {
+    try {
+      const res = await api.get('/reservas');
+      adminData.reservas = (res && res.reservas) ? res.reservas : [];
+      renderReservas(adminData.reservas);
+    } catch (err) {
+      console.error('Erro reservas', err);
+      showAlert('Erro ao carregar reservas', 'error');
     }
   }
 
   async function loadProfessores() {
     try {
-      debug('Carregando professores...');
-      const professores = await api.get('/professores');
-      adminData.professores = professores;
-      debug('Professores carregados:', professores.length);
-      
-      // Atualiza os selects de professores com IDs CORRETOS
-      updateProfessorSelects(professores);
-    } catch (error) {
-      console.error('Erro ao carregar professores:', error);
+      const resp = await api.get('/professores');
+      adminData.professores = Array.isArray(resp) ? resp : (resp || []);
+      renderProfessoresList();
+      updateProfessorSelects();
+    } catch (err) {
+      console.error('Erro professores', err);
       showAlert('Erro ao carregar professores', 'error');
     }
   }
 
-  function updateProfessorSelects(professores) {
-    // CORREÇÃO: IDs conforme HTML
-    const selects = [
-      { id: 'novaProfessor', element: $id('novaProfessor') },
-      { id: 'editarProfessor', element: $id('editarProfessor') }
-    ];
-    
-    selects.forEach(({ element }) => {
-      if (element) {
-        const currentValue = element.value;
-        const options = professores.map(p => `
-          <option value="${p.id}" ${p.id == currentValue ? 'selected' : ''}>
-            ${escapeHtml(p.nome)} ${p.email ? `(${escapeHtml(p.email)})` : ''}
-          </option>
-        `).join('');
-        
-        element.innerHTML = '<option value="">Selecione um professor</option>' + options;
-      }
+  // ===== Helpers Professores =====
+  function updateProfessorSelects(list = adminData.professores) {
+    const ids = ['novaProfessor', 'editarProfessor'];
+    ids.forEach(id => {
+      const el = $id(id);
+      if (!el) return;
+      const cur = el.value;
+      const opts = list.map(p => `<option value="${p.id}" ${p.id == cur ? 'selected' : ''}>${escapeHtml(p.nome)}</option>`).join('');
+      el.innerHTML = '<option value="">Selecione um professor</option>' + opts;
     });
   }
 
-  async function loadReservas() {
-    try {
-      debug('Carregando reservas...');
-      const data = await api.get('/reservas');
-      adminData.reservas = data.reservas || [];
-      renderReservas(adminData.reservas);
-      debug('Reservas carregadas:', adminData.reservas.length);
-    } catch (error) {
-      console.error('Erro ao carregar reservas:', error);
-      showAlert('Erro ao carregar reservas', 'error');
-    }
+  function getProfessoresContainer() {
+    return $id('adminProfessoresList');
   }
 
-  // ===== RENDERIZAÇÃO =====
+  function renderProfessoresList() {
+    const container = getProfessoresContainer();
+    if (!container) return;
+    const list = adminData.professores || [];
+
+    if (!list.length) {
+      container.innerHTML = '<div class="empty">Nenhum professor cadastrado</div>';
+      return;
+    }
+
+    container.innerHTML = list.map(p => `
+      <div class="vaga-admin-item" data-id="${p.id}">
+        <div class="prof-left">
+          <img src="${p.foto || '/img/default-prof.png'}" alt="${escapeHtml(p.nome)}" class="prof-thumb"/>
+          <div class="prof-meta">
+            <strong>${escapeHtml(p.nome)}</strong>
+            <small>${escapeHtml(p.email || '')}</small>
+            <small class="telefone-display">${p.telefone ? formatarTelefone(p.telefone) : 'Não informado'}</small>
+            <small>Preço: R$${p.preco ? parseFloat(p.preco).toFixed(2) : 'N/A'}</small>
+          </div>
+        </div>
+        <div class="prof-actions">
+          <button class="action-icon-btn" data-action="edit-prof" data-id="${p.id}" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="action-icon-btn" data-action="del-prof" data-id="${p.id}" title="Excluir"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ===== Renders =====
   function renderVagas(vagas) {
     const container = $id('adminVagasList');
-    if (!container) {
-      debug('Container de vagas não encontrado!');
-      return;
-    }
-    
-    if (!vagas || vagas.length === 0) {
-      container.innerHTML = '<div class="empty">Nenhuma vaga encontrada</div>';
-      return;
-    }
-    
-    container.innerHTML = vagas.map(vaga => `
-      <div class="vaga-item" data-id="${vaga.id}">
-        <div class="vaga-status ${vaga.vagas_disponiveis > 0 ? 'disponivel' : 'esgotada'}">
-          ${vaga.vagas_disponiveis} vaga(s)
-        </div>
+    if (!container) return;
+    if (!vagas || vagas.length === 0) { container.innerHTML = '<div class="empty">Nenhuma vaga encontrada</div>'; return; }
+
+    container.innerHTML = vagas.map(v => `
+      <div class="vaga-item" data-id="${v.id}">
+        <div class="vaga-status ${v.vagas_disponiveis > 0 ? 'disponivel' : 'esgotada'}">${v.vagas_disponiveis} vaga(s)</div>
         <div class="vaga-info">
-          <h3>${escapeHtml(vaga.titulo || 'Sem título')}</h3>
+          <h3>${escapeHtml(v.titulo || 'Sem título')}</h3>
           <div class="vaga-meta">
-            <span><i class="fas fa-clock"></i> ${escapeHtml(vaga.horario || '')}</span>
-            <span><i class="fas fa-calendar"></i> ${escapeHtml(vaga.dias || '')}</span>
-            <span><i class="fas fa-chart-line"></i> ${escapeHtml(vaga.nivel || '')}</span>
-            <span><i class="fas fa-user"></i> ${escapeHtml(vaga.professor_nome || vaga.professor || 'Sem professor')}</span>
-            <span class="vaga-tipo">${escapeHtml(vaga.tipo || '')}</span>
-          </div>
-          <div class="vaga-stats">
-            <small>Total: ${vaga.vagas_totais} | Disponível: ${vaga.vagas_disponiveis}</small>
-            <small>Status: ${vaga.ativo ? 'Ativa' : 'Inativa'}</small>
+            <span>${escapeHtml(v.horario || '')}</span>
+            <span>${escapeHtml(v.dias || '')}</span>
+            <span>${escapeHtml(v.nivel || '')}</span>
+            <span>${escapeHtml(v.professor_nome || v.professor || 'Sem professor')}</span>
           </div>
         </div>
         <div class="vaga-actions">
-          <button class="btn-icon edit" data-action="edit" data-id="${vaga.id}" title="Editar" aria-label="Editar vaga">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-icon delete" data-action="delete" data-id="${vaga.id}" title="Excluir" aria-label="Excluir vaga">
-            <i class="fas fa-trash"></i>
-          </button>
+          <button class="btn-icon edit" data-action="edit" data-id="${v.id}" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="btn-icon delete" data-action="delete" data-id="${v.id}" title="Excluir"><i class="fas fa-trash"></i></button>
         </div>
       </div>
     `).join('');
@@ -256,548 +278,558 @@
 
   function renderReservas(reservas) {
     const container = $id('reservasTable');
-    if (!container) {
-      debug('Tabela de reservas não encontrada!');
-      return;
-    }
-    
-    if (!reservas || reservas.length === 0) {
-      container.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma reserva encontrada</td></tr>';
-      return;
-    }
-    
-    container.innerHTML = reservas.map(reserva => `
-      <tr data-id="${reserva.id}">
-        <td><code>${reserva.reserva_id}</code></td>
-        <td>${escapeHtml(reserva.nome || '')}</td>
-        <td>${escapeHtml(reserva.email || '')}</td>
-        <td>${escapeHtml(reserva.vaga_titulo || '')}</td>
-        <td>${new Date(reserva.data_reserva).toLocaleDateString('pt-BR')}</td>
-        <td><span class="status-badge status-${reserva.status}">${reserva.status || 'pendente'}</span></td>
+    if (!container) return;
+    if (!reservas || reservas.length === 0) { container.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma reserva encontrada</td></tr>'; return; }
+
+    container.innerHTML = reservas.map(r => `
+      <tr data-id="${r.id}">
+        <td><code>${r.reserva_id}</code></td>
+        <td>${escapeHtml(r.nome || '')}</td>
+        <td>${escapeHtml(r.email || '')}</td>
+        <td>${escapeHtml(r.vaga_titulo || '')}</td>
+        <td>${r.data_reserva ? new Date(r.data_reserva).toLocaleDateString('pt-BR') : ''}</td>
+        <td><span class="status-badge status-${r.status}">${r.status || 'pendente'}</span></td>
         <td>
           <div class="table-actions">
-            ${reserva.status === 'pendente' ? `
-              <button class="btn-small btn-success" data-action="confirm-reserva" data-reserva-id="${reserva.reserva_id}">
-                Confirmar
-              </button>
-            ` : ''}
-            <button class="btn-icon" data-action="view-reserva" data-id="${reserva.id}" title="Ver detalhes">
-              <i class="fas fa-eye"></i>
-            </button>
+            ${r.status === 'pendente' ? `<button class="btn-small btn-success" data-action="confirm-reserva" data-reserva-id="${r.reserva_id}">Confirmar</button>` : ''}
+            <button class="btn-icon" data-action="view-reserva" data-id="${r.id}"><i class="fas fa-eye"></i></button>
           </div>
         </td>
       </tr>
     `).join('');
   }
 
-  // ===== CRUD OPERATIONS =====
-  async function createVaga(data) {
+  // ===== CRUD Professores =====
+  async function createProfessor(data) {
+    const res = await api.post('/professores', data);
+    await loadProfessores();
+    return res;
+  }
+
+  async function updateProfessor(id, data) {
+    const res = await api.put(`/professores/${id}`, data);
+    await loadProfessores();
+    return res;
+  }
+
+  async function deleteProfessor(id) {
+    if (!confirm('Tem certeza que deseja excluir este professor?')) return;
     try {
-      debug('Criando nova vaga:', data);
-      const result = await api.post('/vagas', data);
-      await loadVagas();
-      await loadDashboardStats();
-      return result;
-    } catch (error) {
-      console.error('Erro ao criar vaga:', error);
-      throw error;
+      await api.delete(`/professores/${id}`);
+      showAlert('Professor excluído com sucesso!', 'success');
+      await loadProfessores();
+    } catch (err) {
+      console.error(err);
+      showAlert('Erro ao excluir professor', 'error');
     }
+  }
+
+  // ===== CRUD Vagas =====
+  async function createVaga(data) {
+    const res = await api.post('/vagas', data);
+    await Promise.all([loadVagas(), loadDashboardStats()]);
+    return res;
   }
 
   async function updateVaga(id, data) {
-    try {
-      debug('Atualizando vaga:', id, data);
-      const result = await api.put(`/vagas/${id}`, data);
-      await loadVagas();
-      await loadDashboardStats();
-      return result;
-    } catch (error) {
-      console.error('Erro ao atualizar vaga:', error);
-      throw error;
-    }
+    const res = await api.put(`/vagas/${id}`, data);
+    await Promise.all([loadVagas(), loadDashboardStats()]);
+    return res;
   }
 
   async function deleteVaga(id) {
-    try {
-      debug('Excluindo vaga:', id);
-      const result = await api.delete(`/vagas/${id}`);
-      
-      // Verifica se foi desativada em vez de excluída
-      if (result.action === 'deactivated') {
-        showAlert(result.message, 'warning');
-      } else {
-        showAlert('Vaga excluída com sucesso!', 'success');
-      }
-      
-      await loadVagas();
-      await loadDashboardStats();
-      return result;
-    } catch (error) {
-      console.error('Erro ao excluir vaga:', error);
-      throw error;
-    }
+    const res = await api.delete(`/vagas/${id}`);
+    if (res && res.action === 'deactivated') showAlert(res.message, 'warning');
+    else showAlert('Vaga excluída', 'success');
+    await Promise.all([loadVagas(), loadDashboardStats()]);
+    return res;
   }
 
   async function confirmReserva(reservaId) {
-    try {
-      debug('Confirmando reserva:', reservaId);
-      const result = await api.post(`/reservas/${reservaId}/confirm`);
-      await loadReservas();
-      await loadDashboardStats();
-      showAlert('Reserva confirmada com sucesso!', 'success');
-      return result;
-    } catch (error) {
-      console.error('Erro ao confirmar reserva:', error);
-      throw error;
-    }
+    const res = await api.post(`/reservas/${reservaId}/confirm`);
+    await Promise.all([loadReservas(), loadDashboardStats()]);
+    showAlert('Reserva confirmada', 'success');
+    return res;
   }
 
   async function resetAllVagas() {
-    try {
-      debug('Resetando todas as vagas...');
-      const result = await api.post('/vagas/reset-all');
-      await loadVagas();
-      await loadDashboardStats();
-      showAlert('Todas as vagas foram resetadas!', 'success');
-      return result;
-    } catch (error) {
-      console.error('Erro ao resetar vagas:', error);
-      throw error;
-    }
+    const res = await api.post('/vagas/reset-all');
+    await loadVagas();
+    showAlert('Todas as vagas foram resetadas!', 'success');
+    return res;
   }
 
   async function changePassword(data) {
-    try {
-      debug('Alterando senha...');
-      const result = await api.post('/alterar-senha', data);
-      showAlert('Senha alterada com sucesso!', 'success');
-      return result;
-    } catch (error) {
-      console.error('Erro ao alterar senha:', error);
-      throw error;
-    }
+    const res = await api.post('/alterar-senha', data);
+    showAlert('Senha alterada com sucesso!', 'success');
+    return res;
   }
 
-  // ===== MODAL MANAGEMENT =====
-  function openNovaVagaModal() {
-    openModal('novaVagaModal');
-    
-    // Limpa o formulário
-    const form = $id('novaVagaForm');
-    if (form) {
-      form.reset();
-      
-      // Garante valores padrão
-      $id('novaTotal') && ($id('novaTotal').value = 2);
-      $id('novaDisponiveis') && ($id('novaDisponiveis').value = 2);
-      
-      // Foca no primeiro campo
-      setTimeout(() => {
-        $id('novaTitulo')?.focus();
-      }, 100);
-    }
-  }
-
-  function openEditVagaModal(vaga) {
-    openModal('editarVagaModal');
-    
-    const form = $id('editarVagaForm');
-    if (!form) return;
-    
-    // CORREÇÃO: IDs do HTML
-    $id('editarId') && ($id('editarId').value = vaga.id);
-    $id('editarTitulo') && ($id('editarTitulo').value = vaga.titulo || '');
-    $id('editarHorario') && ($id('editarHorario').value = vaga.horario || '');
-    $id('editarDias') && ($id('editarDias').value = vaga.dias || '');
-    $id('editarNivel') && ($id('editarNivel').value = vaga.nivel || '');
-    $id('editarTotal') && ($id('editarTotal').value = vaga.vagas_totais || 0);
-    $id('editarDisponiveis') && ($id('editarDisponiveis').value = vaga.vagas_disponiveis || 0);
-    $id('editarTipo') && ($id('editarTipo').value = vaga.tipo || '');
-    
-    // Seleciona o professor correto
-    const select = $id('editarProfessor');
-    if (select && adminData.professores.length > 0) {
-      select.value = vaga.professor_id || '';
-    }
-    
-    // Foca no primeiro campo
-    setTimeout(() => {
-      $id('editarTitulo')?.focus();
-    }, 100);
-  }
-
-  // ===== CONFIGURAÇÃO DE EVENTOS =====
+  // ===== Event delegation =====
   function setupEventDelegation() {
-    debug('Configurando delegação de eventos...');
-    
-    // Navegação principal
-    document.addEventListener('click', function(e) {
-      const target = e.target.closest('[data-section]');
-      if (target && target.dataset.section) {
+    // Navigation
+    document.addEventListener('click', function (e) {
+      const nav = e.target.closest('[data-section]');
+      if (nav && nav.dataset.section) {
         e.preventDefault();
-        const section = target.dataset.section;
-        debug('Navegação clicada:', section);
-        
-        // Atualiza navegação
-        $qsa('.section').forEach(el => el.classList.remove('active'));
-        $qsa('.nav-item').forEach(el => el.classList.remove('active'));
-        
+        const section = nav.dataset.section;
+        $qsa('.section').forEach(s => s.classList.remove('active'));
+        $qsa('.nav-item').forEach(n => n.classList.remove('active'));
         const sectionEl = $id(section);
         if (sectionEl) {
           sectionEl.classList.add('active');
-          target.classList.add('active');
-          $id('sectionTitle').textContent = 
-            section === 'dashboard' ? 'Dashboard' :
+          nav.classList.add('active');
+          const title = section === 'dashboard' ? 'Dashboard' :
             section === 'vagas' ? 'Gerenciar Vagas' :
-            section === 'reservas' ? 'Reservas' : 'Configurações';
-          
-          // Carrega dados específicos da seção
+              section === 'reservas' ? 'Reservas' :
+                section === 'professores' ? 'Professores' :
+                  'Configurações';
+          $id('sectionTitle') && ($id('sectionTitle').textContent = title);
           if (section === 'dashboard') loadDashboardStats();
           if (section === 'vagas') loadVagas();
           if (section === 'reservas') loadReservas();
+          if (section === 'professores') loadProfessores();
         }
       }
     });
-    
-    // Botões de ação rápida no dashboard
-    const quickActions = $id('dashboard');
-    if (quickActions) {
-      quickActions.addEventListener('click', function(e) {
-        const actionBtn = e.target.closest('[data-action]');
-        if (actionBtn) {
-          e.preventDefault();
-          const action = actionBtn.dataset.action;
-          
-          switch(action) {
-            case 'abrir-nova-vaga':
-              openNovaVagaModal();
-              break;
-              
-            case 'resetar-vagas':
-              if (confirm('Resetar todas as vagas para o total original?')) {
-                resetAllVagas().catch(err => {
-                  showAlert('Erro ao resetar vagas: ' + err.message, 'error');
-                });
-              }
-              break;
-              
-            case 'ver-reservas':
-              // Navega para a seção de reservas
-              const reservasBtn = document.querySelector('[data-section="reservas"]');
-              reservasBtn?.click();
-              break;
-              
-            case 'abrir-config':
-              // Navega para a seção de configurações
-              const configBtn = document.querySelector('[data-section="config"]');
-              configBtn?.click();
-              break;
-          }
+
+    // Dashboard actions
+    $id('dashboard')?.addEventListener('click', function (e) {
+      const actionBtn = e.target.closest('[data-action]');
+      if (!actionBtn) return;
+      e.preventDefault();
+      const action = actionBtn.dataset.action;
+      if (action === 'abrir-nova-vaga') openModal('novaVagaModal');
+      if (action === 'resetar-vagas' && confirm('Resetar todas as vagas?')) resetAllVagas();
+      if (action === 'ver-reservas') document.querySelector('[data-section="reservas"]')?.click();
+      if (action === 'abrir-config') document.querySelector('[data-section="config"]')?.click();
+    });
+
+    // Vagas list actions
+    $id('adminVagasList')?.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.preventDefault();
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'edit') {
+        const vaga = adminData.vagas.find(v => String(v.id) === String(id));
+        if (vaga) {
+          openModal('editarVagaModal');
+          $id('editarId') && ($id('editarId').value = vaga.id);
+          $id('editarTitulo') && ($id('editarTitulo').value = vaga.titulo || '');
+          $id('editarHorario') && ($id('editarHorario').value = vaga.horario || '');
+          $id('editarDias') && ($id('editarDias').value = vaga.dias || '');
+          $id('editarNivel') && ($id('editarNivel').value = vaga.nivel || '');
+          $id('editarTotal') && ($id('editarTotal').value = vaga.vagas_totais || 0);
+          $id('editarDisponiveis') && ($id('editarDisponiveis').value = vaga.vagas_disponiveis || 0);
+          $id('editarTipo') && ($id('editarTipo').value = vaga.tipo || '');
+          $id('editarProfessor') && ($id('editarProfessor').value = vaga.professor_id || '');
         }
-      });
-    }
-    
-    // Botões de ação nas vagas
-    const vagasList = $id('adminVagasList');
-    if (vagasList) {
-      vagasList.addEventListener('click', function(e) {
-        const actionBtn = e.target.closest('[data-action]');
-        if (actionBtn) {
-          e.preventDefault();
-          const action = actionBtn.dataset.action;
-          const id = actionBtn.dataset.id;
-          
-          if (action === 'edit') {
-            const vaga = adminData.vagas.find(v => v.id == id);
-            if (vaga) openEditVagaModal(vaga);
-          }
-          
-          if (action === 'delete') {
-            if (confirm(`Tem certeza que deseja excluir a vaga ID ${id}?`)) {
-              deleteVaga(id).catch(err => {
-                showAlert('Erro ao processar vaga: ' + err.message, 'error');
-              });
-            }
-          }
-        }
-      });
-    }
-    
-    // Botões de ação nas reservas
-    const reservasTable = $id('reservasTable');
-    if (reservasTable) {
-      reservasTable.addEventListener('click', function(e) {
-        const actionBtn = e.target.closest('[data-action]');
-        if (actionBtn) {
-          e.preventDefault();
-          const action = actionBtn.dataset.action;
-          const reservaId = actionBtn.dataset.reservaId;
-          
-          if (action === 'confirm-reserva') {
-            if (confirm('Confirmar esta reserva?')) {
-              confirmReserva(reservaId).catch(err => {
-                showAlert('Erro ao confirmar reserva: ' + err.message, 'error');
-              });
-            }
-          }
-        }
-      });
-    }
-    
-    // Botão específico Nova Vaga
-    const abrirNovaVagaBtn = $id('abrirNovaVagaBtn');
-    if (abrirNovaVagaBtn) {
-      abrirNovaVagaBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openNovaVagaModal();
-      });
-    }
-    
-    // Botão Logout
-    const logoutBtn = $id('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (confirm('Deseja realmente sair?')) {
-          try {
-            const response = await fetch('/api/auth/logout', {
-              method: 'POST',
-              credentials: 'include'
-            });
-            if (response.ok) {
-              window.location.href = '/admin';
-            }
-          } catch (error) {
-            console.error('Erro no logout:', error);
-            window.location.href = '/admin';
-          }
-        }
-      });
-    }
-    
-    // Botão Atualizar
-    const atualizarBtn = $id('atualizarBtn');
-    if (atualizarBtn) {
-      atualizarBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showAlert('Atualizando dados...', 'info');
-        
-        Promise.all([
-          loadDashboardStats(),
-          loadVagas(),
-          loadReservas(),
-          loadProfessores()
-        ]).then(() => {
-          showAlert('Dados atualizados com sucesso!', 'success');
-        }).catch(err => {
-          showAlert('Erro ao atualizar dados', 'error');
-        });
-      });
-    }
-    
-    // Botão Exportar
-    const exportarBtn = $id('exportarBtn');
-    if (exportarBtn) {
-      exportarBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showAlert('Exportando dados...', 'info');
-        // Implementar exportação aqui
-        setTimeout(() => {
-          showAlert('Exportação realizada com sucesso!', 'success');
-        }, 1000);
-      });
-    }
-    
-    // Botão Export Backup
-    const exportBackupBtn = $id('exportBackupBtn');
-    if (exportBackupBtn) {
-      exportBackupBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showAlert('Exportando backup...', 'info');
-        // Implementar backup aqui
-        setTimeout(() => {
-          showAlert('Backup exportado com sucesso!', 'success');
-        }, 1000);
-      });
-    }
-    
+      } else if (action === 'delete' && confirm('Excluir vaga?')) {
+        deleteVaga(btn.dataset.id).catch(err => showAlert('Erro ao excluir: ' + err.message, 'error'));
+      }
+    });
+
+    // Reservas actions
+    $id('reservasTable')?.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.preventDefault();
+      if (btn.dataset.action === 'confirm-reserva' && confirm('Confirmar esta reserva?')) {
+        confirmReserva(btn.dataset.reservaId).catch(err => showAlert('Erro: ' + err.message, 'error'));
+      }
+    });
+
+    // Botão para abrir nova vaga
+    $id('abrirNovaVagaBtn')?.addEventListener('click', e => {
+      e.preventDefault();
+      openModal('novaVagaModal');
+    });
+
+    // Botão para abrir novo professor
+    $id('abrirNovoProfessorBtn')?.addEventListener('click', e => {
+      e.preventDefault();
+      // Resetar o formulário e título
+      const form = $id('novoProfessorForm');
+      if (form) {
+        form.reset();
+        form.dataset.editId = '';
+      }
+      const modalTitle = $id('novoProfessorModal')?.querySelector('h2');
+      if (modalTitle) {
+        modalTitle.innerHTML = '<i class="fas fa-plus"></i> Adicionar Novo Professor';
+      }
+      $id('professorFotoPreview').style.display = 'none';
+      openModal('novoProfessorModal');
+    });
+
+    // Cancelar novo professor
+    $id('cancelNovoProfessorBtn')?.addEventListener('click', e => {
+      e.preventDefault();
+      closeAllModals();
+    });
+
+    // Logout
+    $id('logoutBtn')?.addEventListener('click', async e => {
+      e.preventDefault();
+      if (!confirm('Deseja realmente sair?')) return;
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/admin';
+      } catch (err) {
+        console.error(err);
+        window.location.href = '/admin';
+      }
+    });
+
+    // Atualizar tudo
+    $id('atualizarBtn')?.addEventListener('click', async e => {
+      e.preventDefault();
+      showAlert('Atualizando...', 'info');
+      try {
+        await Promise.all([loadDashboardStats(), loadVagas(), loadReservas(), loadProfessores()]);
+        showAlert('Dados atualizados', 'success');
+      } catch (err) {
+        showAlert('Erro ao atualizar', 'error');
+      }
+    });
+
     // Fechar modais
-    document.addEventListener('click', function(e) {
-      // Fechar ao clicar no overlay (fora do modal)
-      if (e.target.classList.contains('modal')) {
+    document.addEventListener('click', function (e) {
+      if (e.target.classList && e.target.classList.contains('modal')) closeAllModals();
+      if ($closest(e.target, '#cancelNovaVagaBtn') ||
+        $closest(e.target, '#cancelEditarVagaBtn')) {
+        e.preventDefault();
         closeAllModals();
+      }
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAllModals();
+    });
+
+    // Delegar eventos de professores (editar e excluir)
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+
+      // Editar professor
+      if (btn.dataset.action === 'edit-prof') {
+        e.preventDefault();
+        const profId = btn.dataset.id;
+        const professor = adminData.professores.find(p => String(p.id) === String(profId));
+
+        if (professor) {
+          // Preencher formulário
+          $id('professorNome').value = professor.nome || '';
+          $id('professorEmail').value = professor.email || '';
+          
+          // Formatar telefone ao carregar para edição
+          const telefoneFormatado = professor.telefone ? formatarTelefone(professor.telefone) : '';
+          $id('professorTelefone').value = telefoneFormatado;
+          
+          $id('professorPreco').value = professor.preco || '';
+          $id('professorObservacoes').value = professor.observacoes || '';
+
+          // Pré-visualização da foto existente
+          const preview = $id('professorFotoPreview');
+          if (professor.foto) {
+            preview.src = professor.foto;
+            preview.style.display = 'block';
+          } else {
+            preview.style.display = 'none';
+          }
+
+          // Marcar que está editando
+          const form = $id('novoProfessorForm');
+          if (form) {
+            form.dataset.editId = profId;
+          }
+
+          // Atualizar título do modal
+          const modalTitle = $id('novoProfessorModal')?.querySelector('h2');
+          if (modalTitle) {
+            modalTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Professor';
+          }
+
+          openModal('novoProfessorModal');
+        }
+      }
+
+      // Excluir professor
+      if (btn.dataset.action === 'del-prof') {
+        e.preventDefault();
+        const profId = btn.dataset.id;
+        deleteProfessor(profId);
+      }
+    });
+
+    // Formatação automática do telefone enquanto digita com prevenção de caracteres não numéricos
+    $id('professorTelefone')?.addEventListener('input', function (e) {
+      // Permite apenas números, parênteses, espaço e hífen
+      const telefone = e.target.value.replace(/[^\d()\s-]/g, '');
+      
+      const cursorPos = e.target.selectionStart;
+      const telefoneFormatado = formatarTelefone(telefone);
+      e.target.value = telefoneFormatado;
+      
+      // Mantém o cursor na posição correta após formatação
+      const diff = telefoneFormatado.length - telefone.length;
+      e.target.setSelectionRange(cursorPos + diff, cursorPos + diff);
+    });
+
+    // Previne entrada de caracteres inválidos no telefone
+    $id('professorTelefone')?.addEventListener('keydown', function (e) {
+      // Permite: backspace, delete, tab, escape, enter, setas
+      if ([46, 8, 9, 27, 13, 110, 190].indexOf(e.keyCode) !== -1 ||
+        // Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+        (e.keyCode === 65 && (e.ctrlKey || e.metaKey)) ||
+        (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) ||
+        (e.keyCode === 86 && (e.ctrlKey || e.metaKey)) ||
+        (e.keyCode === 88 && (e.ctrlKey || e.metaKey)) ||
+        // Home, End, Left, Right
+        (e.keyCode >= 35 && e.keyCode <= 39)) {
+        return;
       }
       
-      // Fechar com botões cancelar - CORREÇÃO: IDs corretos
-      if (e.target.id === 'cancelNovaVagaBtn' || 
-          e.target.id === 'cancelEditarVagaBtn' ||
-          $closest(e.target, '#cancelNovaVagaBtn') ||
-          $closest(e.target, '#cancelEditarVagaBtn')) {
+      // Permite apenas números
+      if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
         e.preventDefault();
-        closeAllModals();
       }
     });
-    
-    // Fechar com ESC
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeAllModals();
+
+    // Pré-visualização da foto ao selecionar arquivo
+    $id('professorFoto')?.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const preview = $id('professorFotoPreview');
+          preview.src = event.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
       }
     });
-    
+
+    // Formulário de professor (CRIAÇÃO E EDIÇÃO) com validação de imagem e telefone
+    $id('novoProfessorForm')?.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      // Validação básica dos campos obrigatórios
+      const nome = $id('professorNome').value.trim();
+      const email = $id('professorEmail').value.trim();
+      const telefone = $id('professorTelefone').value.trim();
+
+      if (!nome) {
+        showAlert('O nome do professor é obrigatório', 'error');
+        return;
+      }
+
+      if (!email) {
+        showAlert('O email do professor é obrigatório', 'error');
+        return;
+      }
+
+      // Validação simples de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert('Por favor, insira um email válido', 'error');
+        return;
+      }
+
+      // Validação da foto, se houver
+      const fotoFile = $id('professorFoto').files[0];
+      if (fotoFile) {
+        const validacaoImagem = validarArquivoImagem(fotoFile);
+        if (!validacaoImagem.valido) {
+          showAlert(validacaoImagem.erro, 'error');
+          return;
+        }
+      }
+
+      // Validação do telefone (apenas se preenchido)
+      if (telefone) {
+        const validacaoTelefone = validarTelefone(telefone);
+        if (!validacaoTelefone.valido) {
+          showAlert(validacaoTelefone.erro, 'error');
+          return;
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('nome', nome);
+      formData.append('email', email);
+      
+      // Remove formatação do telefone antes de enviar (apenas se preenchido)
+      if (telefone) {
+        const telefoneLimpo = telefone.replace(/\D/g, '');
+        formData.append('telefone', telefoneLimpo);
+      }
+      
+      const preco = $id('professorPreco').value;
+      if (preco) {
+        formData.append('preco', preco);
+      }
+      
+      const observacoes = $id('professorObservacoes').value.trim();
+      if (observacoes) {
+        formData.append('observacoes', observacoes);
+      }
+
+      if (fotoFile) {
+        formData.append('foto', fotoFile);
+      }
+
+      try {
+        const editId = this.dataset.editId;
+
+        const res = await fetch(
+          editId
+            ? `/api/admin/professores/${editId}`
+            : `/api/admin/professores`,
+          {
+            method: editId ? 'PUT' : 'POST',
+            credentials: 'include',
+            body: formData
+          }
+        );
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Erro ao salvar professor');
+        }
+
+        const data = await res.json();
+        showAlert(
+          editId ? 'Professor atualizado com sucesso!' : 'Professor criado com sucesso!',
+          'success'
+        );
+
+        await loadProfessores();
+        closeAllModals();
+        this.reset();
+        delete this.dataset.editId;
+        $id('professorFotoPreview').style.display = 'none';
+
+      } catch (err) {
+        console.error(err);
+        showAlert(err.message, 'error');
+      }
+    });
+
     // Formulário nova vaga
-    const novaVagaForm = $id('novaVagaForm');
-    if (novaVagaForm) {
-      novaVagaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // CORREÇÃO: IDs corretos conforme HTML
-        const formData = {
-          titulo: $id('novaTitulo')?.value || '',
-          horario: $id('novaHorario')?.value || '',
-          dias: $id('novaDias')?.value || '',
-          nivel: $id('novaNivel')?.value || '',
-          vagas_totais: parseInt($id('novaTotal')?.value || 0),
-          professor_id: parseInt($id('novaProfessor')?.value || 0),
-          tipo: $id('novaTipo')?.value || ''
-        };
-        
-        // Validação
-        if (!formData.titulo || !formData.horario || !formData.dias || !formData.nivel || !formData.tipo) {
-          showAlert('Preencha todos os campos obrigatórios', 'warning');
-          return;
-        }
-        
-        if (!formData.professor_id) {
-          showAlert('Selecione um professor', 'warning');
-          return;
-        }
-        
-        try {
-          await createVaga(formData);
-          showAlert('Vaga criada com sucesso!', 'success');
-          closeAllModals();
-        } catch (error) {
-          showAlert('Erro ao criar vaga: ' + error.message, 'error');
-        }
-      });
-    }
-    
+    $id('novaVagaForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const payload = {
+        titulo: $id('novaTitulo')?.value || '',
+        horario: $id('novaHorario')?.value || '',
+        dias: $id('novaDias')?.value || '',
+        nivel: $id('novaNivel')?.value || '',
+        vagas_totais: parseInt($id('novaTotal')?.value || 0),
+        professor_id: parseInt($id('novaProfessor')?.value || 0),
+        tipo: $id('novaTipo')?.value || ''
+      };
+
+      if (!payload.titulo || !payload.horario || !payload.dias || !payload.nivel || !payload.tipo) {
+        showAlert('Preencha todos os campos obrigatórios', 'warning');
+        return;
+      }
+      if (!payload.professor_id) {
+        showAlert('Selecione um professor', 'warning');
+        return;
+      }
+
+      try {
+        await createVaga(payload);
+        closeAllModals();
+        showAlert('Vaga criada', 'success');
+      } catch (err) {
+        showAlert('Erro criar vaga: ' + err.message, 'error');
+      }
+    });
+
     // Formulário editar vaga
-    const editarVagaForm = $id('editarVagaForm');
-    if (editarVagaForm) {
-      editarVagaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = $id('editarId')?.value;
-        
-        if (!id) {
-          showAlert('ID da vaga não encontrado', 'error');
-          return;
-        }
-        
-        const formData = {
-          titulo: $id('editarTitulo')?.value || '',
-          horario: $id('editarHorario')?.value || '',
-          dias: $id('editarDias')?.value || '',
-          nivel: $id('editarNivel')?.value || '',
-          vagas_totais: parseInt($id('editarTotal')?.value || 0),
-          vagas_disponiveis: parseInt($id('editarDisponiveis')?.value || 0),
-          professor_id: parseInt($id('editarProfessor')?.value || 0),
-          tipo: $id('editarTipo')?.value || '',
-          ativo: 1
-        };
-        
-        if (!formData.titulo || !formData.horario || !formData.dias || !formData.nivel || !formData.tipo) {
-          showAlert('Preencha todos os campos obrigatórios', 'warning');
-          return;
-        }
-        
-        try {
-          await updateVaga(id, formData);
-          showAlert('Vaga atualizada com sucesso!', 'success');
-          closeAllModals();
-        } catch (error) {
-          showAlert('Erro ao atualizar vaga: ' + error.message, 'error');
-        }
-      });
-    }
-    
+    $id('editarVagaForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = $id('editarId')?.value;
+      if (!id) {
+        showAlert('ID da vaga não encontrado', 'error');
+        return;
+      }
+
+      const payload = {
+        titulo: $id('editarTitulo')?.value || '',
+        horario: $id('editarHorario')?.value || '',
+        dias: $id('editarDias')?.value || '',
+        nivel: $id('editarNivel')?.value || '',
+        vagas_totais: parseInt($id('editarTotal')?.value || 0),
+        vagas_disponiveis: parseInt($id('editarDisponiveis')?.value || 0),
+        professor_id: parseInt($id('editarProfessor')?.value || 0),
+        tipo: $id('editarTipo')?.value || '',
+        ativo: 1
+      };
+
+      if (!payload.titulo || !payload.horario || !payload.dias || !payload.nivel || !payload.tipo) {
+        showAlert('Preencha todos os campos obrigatórios', 'warning');
+        return;
+      }
+
+      try {
+        await updateVaga(id, payload);
+        closeAllModals();
+        showAlert('Vaga atualizada', 'success');
+      } catch (err) {
+        showAlert('Erro atualizar vaga: ' + err.message, 'error');
+      }
+    });
+
     // Formulário alterar senha
-    const changePasswordForm = $id('changePasswordForm');
-    if (changePasswordForm) {
-      changePasswordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const senha_atual = $id('currentPassword')?.value || '';
-        const nova_senha = $id('newPassword')?.value || '';
-        const confirmar_senha = $id('confirmPassword')?.value || '';
-        
-        if (!senha_atual || !nova_senha || !confirmar_senha) {
-          showAlert('Preencha todos os campos', 'warning');
-          return;
-        }
-        
-        if (nova_senha !== confirmar_senha) {
-          showAlert('As senhas não coincidem', 'warning');
-          return;
-        }
-        
-        if (nova_senha.length < 6) {
-          showAlert('A senha deve ter pelo menos 6 caracteres', 'warning');
-          return;
-        }
-        
-        try {
-          await changePassword({
-            senha_atual,
-            nova_senha,
-            confirmar_senha
-          });
-          changePasswordForm.reset();
-        } catch (error) {
-          showAlert('Erro ao alterar senha: ' + error.message, 'error');
-        }
-      });
-    }
+    $id('changePasswordForm')?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const senha_atual = $id('currentPassword')?.value || '';
+      const nova_senha = $id('newPassword')?.value || '';
+      const confirmar_senha = $id('confirmPassword')?.value || '';
+
+      if (!senha_atual || !nova_senha || !confirmar_senha) {
+        showAlert('Preencha todos os campos', 'warning');
+        return;
+      }
+      if (nova_senha !== confirmar_senha) {
+        showAlert('Senhas não coincidem', 'warning');
+        return;
+      }
+      if (nova_senha.length < 6) {
+        showAlert('Senha precisa ter ao menos 6 caracteres', 'warning');
+        return;
+      }
+
+      try {
+        await changePassword({ senha_atual, nova_senha, confirmar_senha });
+        $id('changePasswordForm').reset();
+      } catch (err) {
+        showAlert('Erro ao alterar senha', 'error');
+      }
+    });
   }
 
-  // ===== INICIALIZAÇÃO =====
+  // ===== Init =====
   async function init() {
     debug('Inicializando painel...');
-    
-    // Configura eventos
     setupEventDelegation();
-    
-    // Carrega dados iniciais
     try {
-      await Promise.all([
-        loadDashboardStats(),
-        loadProfessores(),
-        loadVagas()
-      ]);
-      
+      await Promise.all([loadDashboardStats(), loadProfessores(), loadVagas()]);
       debug('Painel inicializado com sucesso!');
-    } catch (error) {
-      console.error('Erro na inicialização:', error);
+    } catch (err) {
+      console.error('Erro init', err);
       showAlert('Erro ao carregar dados do painel', 'error');
     }
   }
 
-  // Inicia quando o DOM estiver pronto
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-
-  // Expõe para debug no console
-  window.adminDebug = {
-    reloadVagas: loadVagas,
-    reloadStats: loadDashboardStats,
-    reloadReservas: loadReservas,
-    reloadProfessores: loadProfessores,
-    data: adminData,
-    api: api
-  };
-
 })();

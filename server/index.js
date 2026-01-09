@@ -27,6 +27,18 @@ console.log('=== DIRETÓRIOS ===');
 console.log('Público:', publicDir);
 console.log('Admin:', adminDir);
 
+function dump(name, mod) {
+  console.log(`${name}: type=${typeof mod}`, mod && mod.constructor ? `ctor=${mod.constructor.name}` : '');
+  if (mod && typeof mod === 'object') {
+    try { console.log(`${name} keys:`, Object.keys(mod).slice(0,10)); } catch(e) {}
+  }
+}
+
+dump('authRoutes', authRoutes);
+dump('adminRoutes', adminRoutes);
+dump('publicRoutes', publicRoutes);
+
+
 /* ======================
    MIDDLEWARES
 ====================== */
@@ -79,6 +91,31 @@ app.use((req, res, next) => {
   const role = req.session?.isAdmin ? 'ADMIN' : 'PUBLIC';
   console.log(`${new Date().toLocaleTimeString()} ${req.method} ${req.path} | ${role}`);
   next();
+});
+
+// Adicione isso em index.js depois das outras rotas, antes do app.listen
+app.get('/debug/vagas', async (req, res) => {
+    console.log('Debug: Acessando rota /api/vagas');
+    const { query } = require('./database');
+    try {
+        const vagas = await query(`
+            SELECT v.*, p.nome AS professor_nome
+            FROM vagas v
+            LEFT JOIN professores p ON v.professor_id = p.id
+            WHERE v.ativo = 1
+            ORDER BY v.created_at DESC
+        `);
+        console.log(`Debug: ${vagas.length} vagas encontradas`);
+        res.json({ 
+            success: true, 
+            vagas, 
+            total: vagas.length,
+            disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length 
+        });
+    } catch (error) {
+        console.error('Debug: Erro na query:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
 /* ======================
@@ -151,6 +188,10 @@ app.get('/admin/:page', (req, res) => {
     res.status(404).send('Página não encontrada');
   }
 });
+
+// Rota pública para servir fotos de professores
+app.use('/uploads/professores', express.static(path.join(__dirname, 'admin', 'uploads', 'professores')));
+
 
 /* ======================
    ARQUIVOS ESTÁTICOS DO SITE PÚBLICO

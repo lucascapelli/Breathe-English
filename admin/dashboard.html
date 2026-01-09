@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Admin - Controle de Vagas</title>
 
   <!-- CSS -->
@@ -12,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
+
 <body>
   <div class="admin-container">
     <!-- Sidebar -->
@@ -37,6 +39,10 @@
         <button type="button" class="nav-item" data-section="config" aria-controls="config">
           <i class="fas fa-cog"></i>
           <span>Configurações</span>
+        </button>
+        <button type="button" class="nav-item" data-section="professores" aria-controls="professores">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <span>Professores</span>
         </button>
       </nav>
 
@@ -162,7 +168,13 @@
           <table class="reservas-table" aria-describedby="Reservas realizadas">
             <thead>
               <tr>
-                <th>ID</th><th>Nome</th><th>Email</th><th>Turma</th><th>Data</th><th>Status</th><th>Ações</th>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Turma</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody id="reservasTable"></tbody>
@@ -172,7 +184,9 @@
 
       <!-- Configurações Section -->
       <section id="config" class="section" role="region" aria-label="Configurações">
-        <div class="section-header"><h2>Configurações</h2></div>
+        <div class="section-header">
+          <h2>Configurações</h2>
+        </div>
 
         <div class="config-grid">
           <div class="config-card">
@@ -197,9 +211,12 @@
           <div class="config-card">
             <h3><i class="fas fa-bell"></i> Notificações</h3>
             <div class="checkbox-group">
-              <label class="checkbox-label"><input type="checkbox" id="notifyEmailNewReservation" checked /> <span>Email para novas reservas</span></label>
-              <label class="checkbox-label"><input type="checkbox" id="notifyVagasEsgotadas" checked /> <span>Alerta de vagas esgotadas</span></label>
-              <label class="checkbox-label"><input type="checkbox" id="notifyRelatorioDiario" /> <span>Relatório diário</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="notifyEmailNewReservation" checked /> <span>Email
+                  para novas reservas</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="notifyVagasEsgotadas" checked /> <span>Alerta de
+                  vagas esgotadas</span></label>
+              <label class="checkbox-label"><input type="checkbox" id="notifyRelatorioDiario" /> <span>Relatório
+                  diário</span></label>
             </div>
           </div>
 
@@ -207,12 +224,28 @@
             <h3><i class="fas fa-database"></i> Backup</h3>
             <p>Faça backup de todos os dados do sistema</p>
             <div class="backup-actions">
-              <button id="exportBackupBtn" class="btn btn-secondary" type="button"> <i class="fas fa-download"></i> Exportar Backup</button>
-              <button id="importBackupBtn" class="btn btn-outline" type="button"> <i class="fas fa-upload"></i> Importar Backup</button>
+              <button id="exportBackupBtn" class="btn btn-secondary" type="button"> <i class="fas fa-download"></i>
+                Exportar Backup</button>
+              <button id="importBackupBtn" class="btn btn-outline" type="button"> <i class="fas fa-upload"></i> Importar
+                Backup</button>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- Professores Section -->
+      <section id="professores" class="section" role="region" aria-label="Gerenciar Professores">
+        <div class="section-header">
+          <h2>Professores</h2>
+          <button id="abrirNovoProfessorBtn" class="btn btn-primary" type="button">
+            <i class="fas fa-plus"></i> Novo Professor
+          </button>
+        </div>
+        <div class="professores-list" id="adminProfessoresList">
+          <!-- Lista será preenchida via JavaScript -->
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -253,7 +286,9 @@
         <div class="form-row">
           <div class="form-group">
             <label for="novaProfessor">Professor *</label>
-            <select id="novaProfessor" required><option value="">Selecione...</option></select>
+            <select id="novaProfessor" required>
+              <option value="">Selecione...</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="novaTipo">Tipo *</label>
@@ -274,7 +309,8 @@
 
         <div class="modal-buttons">
           <button id="cancelNovaVagaBtn" type="button" class="btn btn-outline">Cancelar</button>
-          <button id="saveNovaVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Vaga</button>
+          <button id="saveNovaVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar
+            Vaga</button>
         </div>
       </form>
     </div>
@@ -318,7 +354,9 @@
         <div class="form-row">
           <div class="form-group">
             <label for="editarProfessor">Professor *</label>
-            <select id="editarProfessor" required><option value="">Selecione...</option></select>
+            <select id="editarProfessor" required>
+              <option value="">Selecione...</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="editarTipo">Tipo *</label>
@@ -339,19 +377,74 @@
 
         <div class="modal-buttons">
           <button id="cancelEditarVagaBtn" type="button" class="btn btn-outline">Cancelar</button>
-          <button id="saveEditarVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Atualizar Vaga</button>
+          <button id="saveEditarVagaBtn" type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Atualizar
+            Vaga</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Modal Novo/Editar Professor -->
+  <div id="novoProfessorModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2><i class="fas fa-plus"></i> Adicionar Novo Professor</h2>
+      <form id="novoProfessorForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="professorNome">Nome *</label>
+          <input type="text" id="professorNome" required placeholder="Ex: João Silva" />
+        </div>
+
+        <div class="form-group">
+          <label for="professorEmail">Email *</label>
+          <input type="email" id="professorEmail" required placeholder="exemplo@email.com" />
+        </div>
+
+        <div class="form-group">
+          <label for="professorTelefone">Telefone</label>
+          <input type="tel" id="professorTelefone" placeholder="Ex: (11) 99999-9999" />
+        </div>
+
+        <div class="form-group">
+          <label for="professorPreco">Preço por Aula</label>
+          <input type="number" id="professorPreco" min="0" step="0.01" placeholder="Ex: 50.00" />
+        </div>
+
+        <div class="form-group">
+          <label for="professorFoto">Foto do professor</label>
+          <small>
+            Máx. 5 MB · Formatos aceitos: PNG, JPG, JPEG ou WEBP
+          </small>
+
+          <input type="file" id="professorFoto" accept="image/png, image/jpeg, image/webp" />
+
+          <img id="professorFotoPreview" alt="Pré-visualização da foto"
+            style="display:none; max-width:200px; margin-top:10px;" />
+        </div>
+
+
+        <div class="form-group">
+          <label for="professorObservacoes">Observações</label>
+          <textarea id="professorObservacoes" rows="4" placeholder="Notas adicionais sobre o professor"></textarea>
+        </div>
+
+        <div class="modal-buttons">
+          <button type="button" class="btn btn-outline" id="cancelNovoProfessorBtn">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
   <!-- Script -->
   <script src="/js/admin-script.js" defer></script>
   <script src="/js/mobile.js" defer></script>
-  <!-- Adicione isto antes do fechamento do body -->
-<button class="mobile-menu-toggle" id="mobileMenuToggle">
-  <i class="fas fa-bars"></i>
-</button>
+
 
 </body>
+
 </html>
