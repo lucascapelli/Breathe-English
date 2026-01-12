@@ -1,6 +1,5 @@
-/* admin-style.refactor.css
-   Versão completa e integrada: inclui alertas, modal, status badges e outras melhorias
-   Variáveis em :root, acessibilidade, melhorias e correções
+/* admin-style.optimized.css
+   Versão otimizada e limpa - apenas o que está sendo usado
 */
 
 :root {
@@ -8,7 +7,7 @@
   --bg-body: #f5f5f5;
   --muted: #6b7280;
   --panel: #ffffff;
-  --accent-1: #4f46e5; /* roxo */
+  --accent-1: #4f46e5;
   --accent-2: #7c3aed;
   --accent-grad: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);
   --success: #28a745;
@@ -34,6 +33,7 @@
   margin: 0;
   padding: 0;
 }
+
 html,
 body {
   height: 100%;
@@ -45,6 +45,13 @@ body {
   color: #111827;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Regras Gerais para Imagens ===== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ===== Alertas Fixos ===== */
@@ -133,13 +140,6 @@ body {
 .status-cancelada {
   background: #f8d7da;
   color: #721c24;
-}
-
-/* ===== Table actions ===== */
-.table-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
 }
 
 /* ===== Vaga status ===== */
@@ -232,30 +232,6 @@ body {
   font-style: italic;
 }
 
-/* ===== utilitários ===== */
-.container {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 20px;
-}
-.flex {
-  display: flex;
-}
-.center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.mt-1 {
-  margin-top: 8px;
-}
-.mb-1 {
-  margin-bottom: 8px;
-}
-.hidden {
-  display: none;
-}
-
 /* ===== LOGIN ===== */
 .login-container {
   min-height: 100vh;
@@ -265,6 +241,7 @@ body {
   padding: 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
+
 .login-card {
   background: var(--panel);
   border-radius: var(--radius-lg);
@@ -273,29 +250,35 @@ body {
   max-width: 420px;
   overflow: hidden;
 }
+
 .login-header {
   background: var(--accent-grad);
   color: #fff;
   padding: 40px 30px;
   text-align: center;
 }
+
 .login-header h1 {
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 6px;
 }
+
 .login-body {
   padding: 34px 28px;
 }
+
 .form-group {
   margin-bottom: 20px;
 }
+
 .form-group label {
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
   color: var(--muted);
 }
+
 .form-group input {
   width: 100%;
   padding: 12px;
@@ -304,11 +287,13 @@ body {
   font-size: 1rem;
   transition: box-shadow 0.18s, border-color 0.18s;
 }
+
 .form-group input:focus {
   outline: none;
   border-color: var(--accent-1);
   box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.06);
 }
+
 .login-btn {
   width: 100%;
   padding: 14px;
@@ -323,9 +308,11 @@ body {
   gap: 12px;
   transition: transform 0.2s;
 }
+
 .login-btn:hover {
   transform: translateY(-2px);
 }
+
 .login-footer {
   display: flex;
   justify-content: space-between;
@@ -333,6 +320,7 @@ body {
   padding: 18px 28px;
   border-top: 1px solid #eef2f6;
 }
+
 .back-link {
   color: #6b7280;
   text-decoration: none;
@@ -352,17 +340,21 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 .sidebar-header {
   padding: 26px 20px;
   border-bottom: 1px solid #334155;
 }
+
 .sidebar-header h2 {
   font-size: 1.4rem;
 }
+
 .sidebar-header p {
   color: #94a3b8;
   font-size: 0.9rem;
 }
+
 .sidebar-nav {
   flex: 1;
   padding: 14px 0;
@@ -382,14 +374,17 @@ body {
   width: 100%;
   text-align: left;
 }
+
 .nav-item i {
   width: 22px;
   text-align: center;
 }
+
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
+
 .nav-item.active {
   background: rgba(79, 70, 229, 0.18);
   color: #fff;
@@ -400,12 +395,14 @@ body {
   padding: 18px;
   border-top: 1px solid #334155;
 }
+
 .user-info {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-bottom: 14px;
 }
+
 .user-avatar {
   width: 40px;
   height: 40px;
@@ -416,9 +413,11 @@ body {
   justify-content: center;
   font-weight: 700;
 }
+
 .user-details small {
   color: #94a3b8;
 }
+
 .logout-btn {
   width: 100%;
   padding: 10px;
@@ -428,6 +427,7 @@ body {
   border: 1px solid rgba(239, 68, 68, 0.18);
   cursor: pointer;
 }
+
 .logout-btn:focus {
   outline: 3px solid rgba(239, 68, 68, 0.12);
 }
@@ -438,6 +438,7 @@ body {
   background: var(--bg-page);
   overflow: auto;
 }
+
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -446,9 +447,11 @@ body {
   background: var(--panel);
   border-bottom: 1px solid #e8eef2;
 }
+
 .main-header h1 {
   font-size: 1.6rem;
 }
+
 .header-actions {
   display: flex;
   gap: 10px;
@@ -465,21 +468,14 @@ body {
   align-items: center;
   gap: 8px;
 }
+
 .btn:focus {
   outline: 3px solid rgba(79, 70, 229, 0.08);
 }
+
 .btn-primary {
   background: var(--accent-grad);
   color: #fff;
-}
-.btn-secondary {
-  background: var(--success);
-  color: #fff;
-}
-.btn-outline {
-  background: transparent;
-  border: 1px solid #d1d5db;
-  color: #374151;
 }
 
 /* Sections */
@@ -487,9 +483,11 @@ body {
   padding: 28px;
   display: none;
 }
+
 .section.active {
   display: block;
 }
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -504,6 +502,7 @@ body {
   gap: 18px;
   margin-bottom: 32px;
 }
+
 .stat-card {
   background: var(--panel);
   border-radius: var(--radius-md);
@@ -514,9 +513,11 @@ body {
   box-shadow: var(--shadow-soft);
   transition: transform 0.18s;
 }
+
 .stat-card:hover {
   transform: translateY(-4px);
 }
+
 .stat-icon {
   width: 56px;
   height: 56px;
@@ -526,6 +527,7 @@ body {
   justify-content: center;
   color: #fff;
 }
+
 .stat-info h3 {
   font-size: 1.6rem;
 }
@@ -538,11 +540,13 @@ body {
   box-shadow: var(--shadow-soft);
   margin-bottom: 32px;
 }
+
 .actions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
 }
+
 .action-btn {
   background: var(--panel);
   border: 1px solid #eef2f6;
@@ -554,6 +558,7 @@ body {
   gap: 10px;
   cursor: pointer;
 }
+
 .action-btn:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
@@ -566,6 +571,7 @@ body {
   padding: 22px;
   box-shadow: var(--shadow-soft);
 }
+
 .activity-item {
   display: flex;
   align-items: center;
@@ -573,6 +579,7 @@ body {
   padding: 12px 0;
   border-bottom: 1px solid #f3f4f6;
 }
+
 .activity-item:last-child {
   border-bottom: none;
 }
@@ -582,6 +589,7 @@ body {
   display: grid;
   gap: 12px;
 }
+
 .vaga-admin-item {
   background: var(--panel);
   border-radius: 12px;
@@ -591,10 +599,12 @@ body {
   align-items: center;
   box-shadow: var(--shadow-soft);
 }
+
 .vaga-admin-actions {
   display: flex;
   gap: 8px;
 }
+
 .action-icon-btn {
   width: 40px;
   height: 40px;
@@ -603,6 +613,7 @@ body {
   background: #f3f4f6;
   cursor: pointer;
 }
+
 .action-icon-btn:focus {
   outline: 3px solid rgba(0, 0, 0, 0.06);
 }
@@ -614,10 +625,12 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow-soft);
 }
+
 .reservas-table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .reservas-table th {
   background: #fbfdff;
   padding: 12px;
@@ -626,10 +639,12 @@ body {
   color: #374151;
   border-bottom: 1px solid #e8eef2;
 }
+
 .reservas-table td {
   padding: 12px;
   border-bottom: 1px solid #f3f4f6;
 }
+
 .reservas-table tr:hover {
   background: #fafbfd;
 }
@@ -638,12 +653,14 @@ body {
   position: relative;
   width: 280px;
 }
+
 .search-box input {
   width: 100%;
   padding: 10px 14px 10px 40px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
 }
+
 .search-box i {
   position: absolute;
   left: 12px;
@@ -658,6 +675,7 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 18px;
 }
+
 .config-card {
   background: var(--panel);
   border-radius: 12px;
@@ -670,6 +688,7 @@ body {
   .sidebar {
     width: 72px;
   }
+  
   .sidebar-header h2,
   .sidebar-header p,
   .nav-item span,
@@ -677,9 +696,15 @@ body {
   .logout-btn span {
     display: none;
   }
+  
   .nav-item {
     justify-content: center;
     padding: 14px;
+  }
+  
+  .user-avatar {
+    width: 35px;
+    height: 35px;
   }
 }
 
@@ -687,27 +712,35 @@ body {
   .admin-container {
     flex-direction: column;
   }
+  
   .sidebar {
     width: 100%;
     height: 60px;
     flex-direction: row;
   }
+  
   .sidebar-nav {
     display: flex;
     padding: 0;
   }
+  
   .sidebar-footer {
     display: none;
   }
+  
   .stats-grid {
     grid-template-columns: 1fr;
   }
+  
   .form-row {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 10px;
   }
+  
   .modal-content {
     padding: 18px;
   }
+  
   .fixed-alert {
     min-width: auto;
     max-width: 90%;
@@ -717,14 +750,172 @@ body {
   }
 }
 
-/* small helpers */
-.visually-hidden {
-  position: absolute !important;
-  height: 1px;
-  width: 1px;
-  overflow: hidden;
-  clip: rect(1px, 1px, 1px, 1px);
-  white-space: nowrap;
+/* ===== ESTILOS ESPECÍFICOS PARA LISTA DE PROFESSORES ===== */
+
+/* Container da lista de professores */
+.professores-list {
+  display: grid;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* fim */
+/* Item individual de professor */
+.vaga-admin-item[data-id] {
+  background: var(--panel);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.vaga-admin-item[data-id]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-left-color: var(--accent-1);
+}
+
+/* Lado esquerdo (imagem + informações) */
+.prof-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Thumbnail do professor */
+.prof-thumb {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-1);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  background-color: #f8f9fa;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* Metadados do professor */
+.prof-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.prof-meta strong {
+  display: block;
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.prof-meta small {
+  display: block;
+  color: #64748b;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.prof-meta small:last-of-type {
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--accent-1);
+}
+
+/* Telefone display */
+.telefone-display {
+  font-family: monospace;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* Ações do professor */
+.prof-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-left: 20px;
+}
+
+/* Ações dos botões */
+.prof-actions .action-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.prof-actions .action-icon-btn:hover {
+  background: var(--accent-1);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.prof-actions .action-icon-btn[data-action="del-prof"]:hover {
+  background: var(--danger);
+}
+
+.prof-actions .action-icon-btn i {
+  font-size: 16px;
+}
+
+/* Responsividade para a lista de professores */
+@media (max-width: 768px) {
+  .vaga-admin-item[data-id] {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .prof-left {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .prof-thumb {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .prof-meta strong {
+    font-size: 1.1rem;
+  }
+  
+  .prof-actions {
+    margin-left: 0;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .prof-actions .action-icon-btn {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .prof-thumb {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .prof-meta small {
+    font-size: 0.85rem;
+  }
+}
