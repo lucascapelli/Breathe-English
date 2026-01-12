@@ -98,17 +98,42 @@ async function renderizarVagas() {
                          v.vagas_disponiveis === 1 ? 'vermelho' :
                          v.vagas_disponiveis <= 3 ? 'amarelo' : 'verde';
 
+        // Formatar preço se existir
+        const precoFormatado = v.preco ? 
+            `R$ ${parseFloat(v.preco).toFixed(2).replace('.', ',')}` : 
+            'Preço não informado';
+
         const card = document.createElement('div');
         card.className = `vaga-card ${status}`;
         card.innerHTML = `
-            <img src="${v.professor_foto}" alt="${v.professor}" class="professor-foto">
-            <h3>${v.titulo}</h3>
-            <p>${v.dias} • ${v.horario}</p>
-            <p><strong>${v.professor}</strong> • ${v.nivel}</p>
+            <img src="${v.professor_foto || '/img/default-prof.png'}" alt="${v.professor}" class="professor-foto">
+            <h3 class="vaga-titulo">${v.titulo}</h3>
+            <div class="vaga-info">
+                <div class="info-item">
+                    <div class="info-label">Dias</div>
+                    <div class="info-value">${v.dias}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Horário</div>
+                    <div class="info-value">${v.horario}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Professor</div>
+                    <div class="info-value">${v.professor}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Nível</div>
+                    <div class="info-value">${v.nivel}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Preço</div>
+                    <div class="info-value preco-professor">${precoFormatado}</div>
+                </div>
+            </div>
             <div class="vaga-restante-badge ${corBadge}">${v.vagas_disponiveis} ${v.vagas_disponiveis === 1 ? 'vaga' : 'vagas'} restantes</div>
             <div class="contador-bar"><div class="contador-fill ${status}" style="width:${pct}%"></div></div>
             <button class="vaga-button" ${v.vagas_disponiveis === 0 ? 'disabled' : ''}>
-                ${v.vagas_disponiveis === 0 ? 'ESGOTADO' : 'RESERVAR'}
+                ${v.vagas_disponiveis === 0 ? 'ESGOTADO' : 'RESERVAR VAGA'}
             </button>
         `;
         const btn = card.querySelector('.vaga-button');

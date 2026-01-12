@@ -693,3 +693,32 @@ body {
     object-fit: cover;
     object-position: center 25%; /* Ajusta para focar mais no rosto */
 }
+
+/* Adicionar ao seu CSS existente */
+
+.preco-professor {
+    color: #10b981; /* Cor verde para destacar */
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+/* Se quiser um destaque maior para o preço */
+.info-item:nth-child(5) .info-value {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+/* Ou se preferir um badge para o preço */
+.preco-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-left: 5px;
+}
