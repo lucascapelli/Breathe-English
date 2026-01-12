@@ -347,24 +347,39 @@ body {
     align-items: center;
 }
 
+/* =============================================== */
+/* ESTILOS CORRIGIDOS PARA FOTOS DE PROFESSORES */
+/* =============================================== */
+
 /* ESTILOS UNIFICADOS PARA FOTOS DE PROFESSORES */
 .professor-foto {
     width: 180px;
     height: 180px;
     border-radius: 50%;
-    object-fit: contain;
+    object-fit: cover; /* MUDADO: contain para cover */
+    object-position: center center; /* Garante que o foco fique no centro */
     margin: 0 auto 20px;
     border: 5px solid #6366f1;
     box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
     display: block;
-    background-color: #f8f9ff;
+    background-color: #f8f9ff; /* Cor de fundo caso a imagem não carregue */
 }
 
 /* Para garantir consistência no modal */
 .modal-info img.professor-foto {
     width: 180px;
     height: 180px;
-    object-fit: contain;
+    object-fit: cover; /* MUDADO: contain para cover */
+    object-position: center center; /* Foco no centro da imagem */
+}
+
+/* Ajustes para a lista de vagas (se houver fotos pequenas lá) */
+.vaga-card .professor-foto {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    object-position: center center;
+    border-width: 3px;
 }
 
 /* FORM */
@@ -523,7 +538,10 @@ body {
     50% { transform: scale(1.05); } 
 }
 
+/* =============================================== */
 /* RESPONSIVIDADE */
+/* =============================================== */
+
 @media (max-width: 768px) {
     .vagas-grid { 
         grid-template-columns: 1fr; 
@@ -569,6 +587,15 @@ body {
     .professor-foto {
         width: 150px;
         height: 150px;
+        object-fit: cover; /* Garantir cover em tablets também */
+        object-position: center center;
+    }
+    
+    .modal-info img.professor-foto {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        object-position: center center;
     }
 }
 
@@ -634,7 +661,8 @@ body {
     .professor-foto {
         width: 120px;
         height: 120px;
-        object-fit: contain;
+        object-fit: cover; /* Garantir cover em mobile */
+        object-position: center center;
         margin: 0 auto 15px;
     }
     
@@ -642,6 +670,26 @@ body {
     .modal-info img.professor-foto {
         width: 120px;
         height: 120px;
-        object-fit: contain;
+        object-fit: cover;
+        object-position: center center;
     }
+    
+    .vaga-card .professor-foto {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        object-position: center center;
+    }
+}
+
+/* Se precisar de uma versão que mostra mais da imagem (menos crop) */
+.professor-foto.contain-version {
+    object-fit: contain;
+    background-color: #f8f9ff;
+}
+
+/* Se precisar de uma versão que foca no rosto (para fotos de perfil) */
+.professor-foto.face-focus {
+    object-fit: cover;
+    object-position: center 25%; /* Ajusta para focar mais no rosto */
 }
