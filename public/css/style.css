@@ -123,7 +123,7 @@ body {
     opacity: 0.95;
 }
 
-/* (opcional) tag diagonal */
+/* Tag diagonal (opcional) */
 .vaga-card::before {
     content: 'VAGA LIMITADA';
     position: absolute;
@@ -191,7 +191,7 @@ body {
     font-weight: 700;
 }
 
-/* BADGES DE VAGAS - desktop & mobile (moved here) */
+/* BADGES DE VAGAS */
 .vaga-restante-badge {
     font-weight: 800;
     padding: 10px 14px;
@@ -205,11 +205,11 @@ body {
     box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
-/* cores conforme urgência */
-.vaga-restante-badge.verde   { background-color: #10b981; } /* seguro */
+/* Cores conforme urgência */
+.vaga-restante-badge.verde { background-color: #10b981; } /* seguro */
 .vaga-restante-badge.amarelo { background-color: #f59e0b; } /* atenção */
-.vaga-restante-badge.vermelho{ background-color: #dc2626; } /* última vaga */
-.vaga-restante-badge.preto   { background-color: #374151; } /* esgotado */
+.vaga-restante-badge.vermelho { background-color: #dc2626; } /* última vaga */
+.vaga-restante-badge.preto { background-color: #374151; } /* esgotado */
 
 /* CONTADOR */
 .vaga-contador {
@@ -221,7 +221,11 @@ body {
     border: 1px solid #e2e8f0;
 }
 
-.contador-texto { font-size: 0.95rem; color: #475569; margin-bottom: 5px; }
+.contador-texto { 
+    font-size: 0.95rem; 
+    color: #475569; 
+    margin-bottom: 5px; 
+}
 
 .contador-numero {
     font-size: 2.5rem;
@@ -233,15 +237,26 @@ body {
 .contador-numero.esgotando { color: #f59e0b; animation: blink 1s infinite; }
 .contador-numero.esgotado { color: #dc2626; }
 
-@keyframes blink { 0%,100% {opacity:1} 50% {opacity:0.7} }
+@keyframes blink { 
+    0%,100% { opacity:1; } 
+    50% { opacity:0.7; } 
+}
 
-.contador-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.contador-bar { 
+    height: 6px; 
+    background: #e2e8f0; 
+    border-radius: 3px; 
+    margin-top: 10px; 
+    overflow: hidden; 
+}
+
 .contador-fill {
     height: 100%;
     border-radius: 3px;
     transition: width 0.5s ease;
     background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
 }
+
 .contador-fill.esgotando { background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%); }
 .contador-fill.esgotado { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%) !important; width: 100%; }
 
@@ -262,12 +277,22 @@ body {
     background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: white;
 }
-.vaga-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
-.vaga-button:disabled { background: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* MODAL - garante display:none por padrão (sem sobrescrever pra flex) */
+.vaga-button:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); 
+}
+
+.vaga-button:disabled { 
+    background: #94a3b8; 
+    cursor: not-allowed; 
+    transform: none; 
+    box-shadow: none; 
+}
+
+/* MODAL */
 .modal {
-    display: none; /* default: escondido */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -282,133 +307,341 @@ body {
 }
 
 .modal-content {
-    background:white;
-    border-radius:20px;
-    padding:40px;
-    max-width:500px;
-    width:90%;
-    box-shadow:0 25px 50px rgba(0,0,0,0.3);
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
     animation: modalAppear 0.3s ease;
-    max-height:90vh;
-    overflow-y:auto;
+    max-height: 90vh;
+    overflow-y: auto;
 }
-@keyframes modalAppear { from {opacity:0; transform:translateY(-20px)} to {opacity:1; transform:translateY(0)} }
-.modal h2 { color:#1e293b; margin-bottom:20px; font-size:1.8rem; }
-.modal p { color:#475569; margin-bottom:25px; line-height:1.6; }
-.modal-info { background:#f8f9ff; padding:20px; border-radius:10px; margin-bottom:25px; border-left:4px solid #6366f1; text-align:center; display: flex; flex-direction: column; align-items: center; }
+
+@keyframes modalAppear { 
+    from { opacity:0; transform:translateY(-20px); } 
+    to { opacity:1; transform:translateY(0); } 
+}
+
+.modal h2 { 
+    color: #1e293b; 
+    margin-bottom: 20px; 
+    font-size: 1.8rem; 
+}
+
+.modal p { 
+    color: #475569; 
+    margin-bottom: 25px; 
+    line-height: 1.6; 
+}
+
+.modal-info {
+    background: #f8f9ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border-left: 4px solid #6366f1;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ESTILOS UNIFICADOS PARA FOTOS DE PROFESSORES */
+.professor-foto {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: contain;
+    margin: 0 auto 20px;
+    border: 5px solid #6366f1;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    display: block;
+    background-color: #f8f9ff;
+}
+
+/* Para garantir consistência no modal */
 .modal-info img.professor-foto {
-    width: 180px !important;
-    height: 180px !important;
-    border-radius: 50% !important;
-    object-fit: contain !important;
-    margin: 0 auto 20px auto !important;
-    border: 5px solid #6366f1 !important;
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3) !important;
-    display: block !important;
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
 }
 
 /* FORM */
-.form-group { margin-bottom:20px; }
-.form-group label { display:block; margin-bottom:8px; color:#475569; font-weight:600; }
-.form-group input, .form-group select, .form-group textarea {
-    width:100%; padding:12px 15px; border:2px solid #e2e8f0; border-radius:8px; font-size:1rem;
-    transition:border-color 0.3s ease; font-family:'Inter', sans-serif;
+.form-group { margin-bottom: 20px; }
+
+.form-group label { 
+    display: block; 
+    margin-bottom: 8px; 
+    color: #475569; 
+    font-weight: 600; 
 }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:#6366f1; }
-.form-group.checkbox { display:flex; align-items:flex-start; gap:10px; }
-.form-group.checkbox input { width:20px; margin-top:5px; }
-.form-group.checkbox label { font-size:0.9rem; margin-bottom:0; }
-.modal-buttons { display:flex; gap:15px; margin-top:30px; }
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%; 
+    padding: 12px 15px; 
+    border: 2px solid #e2e8f0; 
+    border-radius: 8px; 
+    font-size: 1rem;
+    transition: border-color 0.3s ease; 
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus { 
+    outline: none; 
+    border-color: #6366f1; 
+}
+
+.form-group.checkbox { 
+    display: flex; 
+    align-items: flex-start; 
+    gap: 10px; 
+}
+
+.form-group.checkbox input { 
+    width: 20px; 
+    margin-top: 5px; 
+}
+
+.form-group.checkbox label { 
+    font-size: 0.9rem; 
+    margin-bottom: 0; 
+}
+
+.modal-buttons { 
+    display: flex; 
+    gap: 15px; 
+    margin-top: 30px; 
+}
+
 .modal-button {
-    flex:1; padding:15px; border:none; border-radius:10px; font-size:1rem; font-weight:600;
-    cursor:pointer; transition:all 0.3s ease; display:flex; align-items:center; justify-content:center; gap:8px;
+    flex: 1; 
+    padding: 15px; 
+    border: none; 
+    border-radius: 10px; 
+    font-size: 1rem; 
+    font-weight: 600;
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px;
 }
-.modal-button.confirmar { background:linear-gradient(135deg,#10b981 0%,#34d399 100%); color:white; }
-.modal-button.confirmar:hover { transform:translateY(-2px); box-shadow:0 10px 20px rgba(16,185,129,0.3); }
-.modal-button.cancelar { background:#f1f5f9; color:#475569; }
-.modal-button.cancelar:hover { background:#e2e8f0; }
+
+.modal-button.confirmar { 
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%); 
+    color: white; 
+}
+
+.modal-button.confirmar:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 20px rgba(16,185,129,0.3); 
+}
+
+.modal-button.cancelar { 
+    background: #f1f5f9; 
+    color: #475569; 
+}
+
+.modal-button.cancelar:hover { 
+    background: #e2e8f0; 
+}
 
 /* MENSAGEM DE SUCESSO */
 .success-message {
-    background: linear-gradient(135deg,#10b981 0%,#34d399 100%);
-    color:white;
-    padding:25px;
-    border-radius:15px;
-    text-align:center;
-    margin-top:20px;
-    display:none;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
     animation: slideDown 0.5s ease;
-    box-shadow:0 10px 30px rgba(16,185,129,0.3);
+    box-shadow: 0 10px 30px rgba(16,185,129,0.3);
 }
-@keyframes slideDown { from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:translateY(0);} }
+
+@keyframes slideDown { 
+    from { opacity:0; transform:translateY(-20px); } 
+    to { opacity:1; transform:translateY(0); } 
+}
 
 /* WHATSAPP FLOAT */
 .whatsapp-float {
-    position:fixed; bottom:30px; right:30px;
-    background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);
-    color:white; padding:15px 25px; border-radius:50px;
-    display:flex; align-items:center; gap:12px; cursor:pointer;
-    box-shadow:0 10px 30px rgba(37,211,102,0.4);
-    transition:all 0.3s ease; z-index:9999; font-weight:600; font-size:1rem;
-    border:2px solid white; text-decoration:none;
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white; 
+    padding: 15px 25px; 
+    border-radius: 50px;
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(37,211,102,0.4);
+    transition: all 0.3s ease; 
+    z-index: 9999; 
+    font-weight: 600; 
+    font-size: 1rem;
+    border: 2px solid white; 
+    text-decoration: none;
 }
-.whatsapp-float:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 15px 40px rgba(37,211,102,0.6); }
-.whatsapp-float:active { transform:translateY(-2px) scale(1.02); }
-.whatsapp-float img { width:32px; height:32px; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 
-/* VAGAS RESTANTES - desktop and mobile color classes (still available for inline text) */
-.restante-esgotado { color:#dc2626; }
-.restante-uma { color:#dc2626; animation:pulseRed 1s infinite; }
-.restante-duas { color:#fbbf24; animation:pulseYellow 1.2s infinite; }
-.restante-disponivel { color:#10b981; }
+.whatsapp-float:hover { 
+    transform: translateY(-5px) scale(1.05); 
+    box-shadow: 0 15px 40px rgba(37,211,102,0.6); 
+}
 
-@keyframes pulseRed { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
-@keyframes pulseYellow { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+.whatsapp-float:active { 
+    transform: translateY(-2px) scale(1.02); 
+}
+
+.whatsapp-float img { 
+    width: 32px; 
+    height: 32px; 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); 
+}
+
+/* VAGAS RESTANTES */
+.restante-esgotado { color: #dc2626; }
+.restante-uma { color: #dc2626; animation: pulseRed 1s infinite; }
+.restante-duas { color: #fbbf24; animation: pulseYellow 1.2s infinite; }
+.restante-disponivel { color: #10b981; }
+
+@keyframes pulseRed { 
+    0%,100% { transform: scale(1); } 
+    50% { transform: scale(1.05); } 
+}
+
+@keyframes pulseYellow { 
+    0%,100% { transform: scale(1); } 
+    50% { transform: scale(1.05); } 
+}
 
 /* RESPONSIVIDADE */
 @media (max-width: 768px) {
-    .vagas-grid { grid-template-columns:1fr; }
-    .header h1 { font-size:2rem; }
-    .header { padding:30px 20px; }
-    .dashboard-header { flex-direction:column; text-align:center; }
-    .modal-content { padding:25px; }
-    .modal-buttons { flex-direction:column; }
-    .whatsapp-float { bottom:20px; right:20px; padding:12px 20px; }
-    .whatsapp-float span { font-size:0.9rem; }
-    .whatsapp-float img { width:28px; height:28px; }
+    .vagas-grid { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .header h1 { 
+        font-size: 2rem; 
+    }
+    
+    .header { 
+        padding: 30px 20px; 
+    }
+    
+    .dashboard-header { 
+        flex-direction: column; 
+        text-align: center; 
+    }
+    
+    .modal-content { 
+        padding: 25px; 
+    }
+    
+    .modal-buttons { 
+        flex-direction: column; 
+    }
+    
+    .whatsapp-float { 
+        bottom: 20px; 
+        right: 20px; 
+        padding: 12px 20px; 
+    }
+    
+    .whatsapp-float span { 
+        font-size: 0.9rem; 
+    }
+    
+    .whatsapp-float img { 
+        width: 28px; 
+        height: 28px; 
+    }
+    
+    /* Ajuste para fotos de professores em tablets */
+    .professor-foto {
+        width: 150px;
+        height: 150px;
+    }
 }
 
 @media (max-width: 480px) {
-    .header h1 { font-size:1.6rem; }
-    .vaga-info { grid-template-columns:1fr; }
-    .whatsapp-float { width:60px; height:60px; justify-content:center; border-radius:50%; padding:15px; }
-    .whatsapp-float span { display:none; }
-    .whatsapp-float img { width:32px; height:32px; margin:0; }
-    .vaga-restante { font-weight:700; font-size:1rem; margin:10px 0; text-align:center; }
-    .vaga-restante-badge {
-        font-weight:700; padding:8px 12px; border-radius:12px; text-align:center; margin:10px 0;
-        color:white; font-size:0.95rem;
+    .header h1 { 
+        font-size: 1.6rem; 
     }
-    .vaga-restante-badge.verde{background-color:#10b981;}
-    .vaga-restante-badge.amarelo{background-color:#f59e0b;}
-    .vaga-restante-badge.vermelho{background-color:#dc2626;}
-    .vaga-restante-badge.preto{background-color:#374151;}
-
+    
+    .vaga-info { 
+        grid-template-columns: 1fr; 
+    }
+    
+    .whatsapp-float { 
+        width: 60px; 
+        height: 60px; 
+        justify-content: center; 
+        border-radius: 50%; 
+        padding: 15px; 
+    }
+    
+    .whatsapp-float span { 
+        display: none; 
+    }
+    
+    .whatsapp-float img { 
+        width: 32px; 
+        height: 32px; 
+        margin: 0; 
+    }
+    
+    .vaga-restante { 
+        font-weight: 700; 
+        font-size: 1rem; 
+        margin: 10px 0; 
+        text-align: center; 
+    }
+    
+    .vaga-restante-badge {
+        font-weight: 700; 
+        padding: 8px 12px; 
+        border-radius: 12px; 
+        text-align: center; 
+        margin: 10px 0;
+        color: white; 
+        font-size: 0.95rem;
+    }
+    
+    .vaga-restante-badge.verde { background-color: #10b981; }
+    .vaga-restante-badge.amarelo { background-color: #f59e0b; }
+    .vaga-restante-badge.vermelho { background-color: #dc2626; }
+    .vaga-restante-badge.preto { background-color: #374151; }
+    
     .vaga-card {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin: 10px;
-    text-align: center;
-    border-radius: 8px;
-    background: #fff;
-}
-
-.vaga-card img.professor-foto {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 10px;
-}
-
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin: 10px 0;
+        text-align: center;
+        border-radius: 8px;
+        background: #fff;
+    }
+    
+    /* Ajuste específico para fotos de professores em mobile */
+    .professor-foto {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        margin: 0 auto 15px;
+    }
+    
+    /* Garantir que fotos no modal também tenham consistência */
+    .modal-info img.professor-foto {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+    }
 }
