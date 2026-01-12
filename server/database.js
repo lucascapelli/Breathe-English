@@ -151,6 +151,8 @@ async function criarTabelas() {
       email VARCHAR(255),
       telefone VARCHAR(50),
       observacoes TEXT,
+      foto VARCHAR(500),
+      preco DECIMAL(10, 2),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

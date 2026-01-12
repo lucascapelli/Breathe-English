@@ -5,10 +5,9 @@ const fs = require('fs');
 const session = require('express-session');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const MySQLStore = require('express-mysql-session')(session);
 
-const { initializeDatabase } = require('./database');
+const { initializeDatabase, query } = require('./database');
 const authRoutes = require('./auth');
 const adminRoutes = require('./adminRoutes');
 const publicRoutes = require('./routes');
@@ -16,36 +15,28 @@ const publicRoutes = require('./routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-/* ======================
-   CONFIGURAÇÃO DE PATHS
-====================== */
+/* ==========================
+   PATHS
+========================== */
 const projectRoot = path.resolve(__dirname, '..');
 const publicDir = path.join(projectRoot, 'public');
 const adminDir = path.join(projectRoot, 'admin');
+const uploadsDir = path.join(publicDir, 'uploads');
 
 console.log('=== DIRETÓRIOS ===');
 console.log('Público:', publicDir);
 console.log('Admin:', adminDir);
+console.log('Uploads:', uploadsDir);
 
-function dump(name, mod) {
-  console.log(`${name}: type=${typeof mod}`, mod && mod.constructor ? `ctor=${mod.constructor.name}` : '');
-  if (mod && typeof mod === 'object') {
-    try { console.log(`${name} keys:`, Object.keys(mod).slice(0,10)); } catch(e) {}
-  }
-}
-
-dump('authRoutes', authRoutes);
-dump('adminRoutes', adminRoutes);
-dump('publicRoutes', publicRoutes);
-
-
-/* ======================
+/* ==========================
    MIDDLEWARES
-====================== */
+========================== */
 app.use(cors({ credentials: true, origin: true }));
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Política de segurança mínima para scripts inline
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
@@ -54,9 +45,9 @@ app.use((req, res, next) => {
   next();
 });
 
-/* ======================
+/* ==========================
    SESSÃO
-====================== */
+========================== */
 const sessionStore = new MySQLStore({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
@@ -79,149 +70,137 @@ app.use(session({
   }
 }));
 
-/* ======================
+/* ==========================
    LOGGER MINIMALISTA
-====================== */
+========================== */
 app.use((req, res, next) => {
-  // IGNORA TUDO que não seja HTML/API
-  if (/\.(css|js|png|jpg|jpeg|svg|ico|map|woff|woff2|ttf|eot|webp|gif)$/i.test(req.path)) {
-    return next();
-  }
-  
+  if (/\.(css|js|png|jpg|jpeg|svg|ico|map|woff|woff2|ttf|eot|webp|gif)$/i.test(req.path)) return next();
   const role = req.session?.isAdmin ? 'ADMIN' : 'PUBLIC';
   console.log(`${new Date().toLocaleTimeString()} ${req.method} ${req.path} | ${role}`);
   next();
 });
 
-// Adicione isso em index.js depois das outras rotas, antes do app.listen
-app.get('/debug/vagas', async (req, res) => {
-    console.log('Debug: Acessando rota /api/vagas');
-    const { query } = require('./database');
-    try {
-        const vagas = await query(`
-            SELECT v.*, p.nome AS professor_nome
-            FROM vagas v
-            LEFT JOIN professores p ON v.professor_id = p.id
-            WHERE v.ativo = 1
-            ORDER BY v.created_at DESC
-        `);
-        console.log(`Debug: ${vagas.length} vagas encontradas`);
-        res.json({ 
-            success: true, 
-            vagas, 
-            total: vagas.length,
-            disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length 
-        });
-    } catch (error) {
-        console.error('Debug: Erro na query:', error);
-        res.status(500).json({ error: error.message });
-    }
+/* ==========================
+   SERVIR ARQUIVOS ESTÁTICOS
+========================== */
+// Middleware customizado para servir uploads de múltiplos diretórios
+app.use('/uploads', (req, res, next) => {
+  // Tenta primeiro em admin/uploads
+  const adminPath = path.join(adminDir, 'uploads', req.path);
+  if (fs.existsSync(adminPath)) {
+    return express.static(path.join(adminDir, 'uploads'))(req, res, next);
+  }
+  // Se não encontrar, tenta em public/uploads
+  const publicPath = path.join(uploadsDir, req.path);
+  if (fs.existsSync(publicPath)) {
+    return express.static(uploadsDir)(req, res, next);
+  }
+  // Se não encontrar em nenhum lugar, passa adiante
+  next();
 });
 
-/* ======================
-   API ROUTES PRIMEIRO
-====================== */
+app.use(express.static(publicDir, { maxAge: 86400000, index: 'index.html' }));
+app.use('/api', publicRoutes);
+/* ==========================
+   ROTAS DE AUTENTICAÇÃO
+========================== */
 app.get('/api/auth/check', (req, res) => {
   res.json({ authenticated: !!req.session?.isAdmin });
 });
 
 app.use('/api/auth', authRoutes);
+
+/* ==========================
+   ROTAS ADMIN (PROTEGIDAS)
+========================== */
 app.use('/api/admin', (req, res, next) => {
-  if (!req.session?.isAdmin) {
-    return res.status(401).json({ error: 'Não autorizado' });
-  }
+  if (!req.session?.isAdmin) return res.status(401).json({ error: 'Não autorizado' });
   next();
 }, adminRoutes);
-app.use('/api', publicRoutes);
 
-/* ======================
-   ARQUIVOS ESTÁTICOS DO ADMIN (APENAS CSS/JS/IMAGENS)
-====================== */
-// Serve apenas arquivos específicos, NÃO HTML
-app.use(express.static(publicDir));
+/* ==========================
+   ROTAS PÚBLICAS
+========================== */
+app.get('/api/', async (req, res) => {
+  try {
+    const vagas = await query(`
+      SELECT v.*, p.nome AS professor_nome, p.foto AS professor_foto
+      FROM vagas v
+      LEFT JOIN professores p ON v.professor_id = p.id
+      WHERE v.ativo = 1
+      ORDER BY v.created_at DESC
+    `);
+    res.json({
+      success: true,
+      vagas,
+      total: vagas.length,
+      disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
 
+/* ==========================
+   ROTAS HTML ADMIN
+========================== */
+const adminPages = ['login', 'dashboard']; // páginas principais
 
-/* ======================
-   ROTAS HTML DO ADMIN (MANUALMENTE)
-====================== */
-
-// 1. Login (PÚBLICO)
 app.get('/admin', (req, res) => {
-  if (req.session?.isAdmin) {
-    return res.redirect('/admin/dashboard');
-  }
-  
+  if (req.session?.isAdmin) return res.redirect('/admin/dashboard');
   const loginPath = path.join(adminDir, 'login.html');
-  if (fs.existsSync(loginPath)) {
-    res.sendFile(loginPath);
-  } else {
-    res.status(404).send('Login não encontrado');
-  }
+  fs.existsSync(loginPath) ? res.sendFile(loginPath) : res.status(404).send('Login não encontrado');
 });
 
-// 2. Dashboard (PROTEGIDO)
 app.get('/admin/dashboard', (req, res) => {
-  if (!req.session?.isAdmin) {
-    return res.redirect('/admin');
-  }
-  
+  if (!req.session?.isAdmin) return res.redirect('/admin');
   const dashboardPath = path.join(adminDir, 'dashboard.html');
-  if (fs.existsSync(dashboardPath)) {
-    res.sendFile(dashboardPath);
-  } else {
-    res.status(404).send('Dashboard não encontrado');
-  }
+  fs.existsSync(dashboardPath) ? res.sendFile(dashboardPath) : res.status(404).send('Dashboard não encontrado');
 });
 
-// 3. Outras páginas do admin
 app.get('/admin/:page', (req, res) => {
-  if (!req.session?.isAdmin) {
-    return res.redirect('/admin');
-  }
-  
-  const page = req.params.page;
-  const pagePath = path.join(adminDir, `${page}.html`);
-  
-  if (fs.existsSync(pagePath)) {
-    res.sendFile(pagePath);
-  } else {
-    res.status(404).send('Página não encontrada');
-  }
+  if (!req.session?.isAdmin) return res.redirect('/admin');
+  const pagePath = path.join(adminDir, `${req.params.page}.html`);
+  fs.existsSync(pagePath) ? res.sendFile(pagePath) : res.status(404).send('Página não encontrada');
 });
 
-// Rota pública para servir fotos de professores
-app.use('/uploads/professores', express.static(path.join(__dirname, 'admin', 'uploads', 'professores')));
-
-
-/* ======================
-   ARQUIVOS ESTÁTICOS DO SITE PÚBLICO
-====================== */
-app.use(express.static(publicDir, { 
-  maxAge: 86400000,
-  index: 'index.html'
-}));
-
-/* ======================
-   FALLBACK - SPA PÚBLICA
-   (APENAS PARA ROTAS NÃO ADMIN)
-====================== */
+/* ==========================
+   FALLBACK SPA
+========================== */
 app.get('*', (req, res) => {
-  // Se for rota do admin, não cai aqui
-  if (req.path.startsWith('/admin')) {
-    return res.status(404).send('Página admin não encontrada');
-  }
-  
+  if (req.path.startsWith('/admin')) return res.status(404).send('Página admin não encontrada');
   const indexPath = path.join(publicDir, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send('Site não encontrado');
+  fs.existsSync(indexPath) ? res.sendFile(indexPath) : res.status(404).send('Site não encontrado');
+});
+
+/* ==========================
+   DEBUG
+========================== */
+app.get('/debug/vagas', async (req, res) => {
+  try {
+    const vagas = await query(`
+      SELECT v.*, p.nome AS professor_nome
+      FROM vagas v
+      LEFT JOIN professores p ON v.professor_id = p.id
+      WHERE v.ativo = 1
+      ORDER BY v.created_at DESC
+    `);
+    res.json({
+      success: true,
+      vagas,
+      total: vagas.length,
+      disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length
+    });
+  } catch (error) {
+    console.error('Debug: Erro na query:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
-/* ======================
+/* ==========================
    INICIALIZAÇÃO
-====================== */
+========================== */
 initializeDatabase().then(() => {
   app.listen(PORT, () => {
     console.log(`

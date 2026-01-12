@@ -4,50 +4,97 @@ const { enviarEmail } = require('../service/emailService');
 
 const router = express.Router();
 
-// Helper: Validar campos obrigatórios
+// =========================
+// HELPERS
+// =========================
 function validarCampos(campos, body) {
   const faltantes = campos.filter(campo => !body[campo]);
-  if (faltantes.length > 0) {
-    return `Campos obrigatórios faltando: ${faltantes.join(', ')}`;
-  }
+  if (faltantes.length > 0) return `Campos obrigatórios faltando: ${faltantes.join(', ')}`;
   return null;
 }
 
-// ======================
-// ROTAS PÚBLICAS - VAGAS
-// ======================
+// Monta URL absoluta para fotos
+function buildFotoUrl(foto) {
+  if (!foto) return 'https://placehold.co/100?text=Prof&font=roboto';
+  if (/^https?:\/\//.test(foto)) return foto;
+  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+  return `${baseUrl}${foto}`;
+}
+
+// Query centralizada para pegar vagas ativas
+async function fetchVagas() {
+  const vagas = await query(`
+    SELECT v.*, p.nome AS professor_nome, p.foto AS professor_foto
+    FROM vagas v
+    LEFT JOIN professores p ON v.professor_id = p.id
+    WHERE v.ativo = 1
+    ORDER BY v.created_at DESC
+  `);
+
+  // Garante que fotos e nomes tenham fallback
+  return vagas.map(v => ({
+    ...v,
+    professor_nome: v.professor_nome || 'Professor não definido',
+    professor_foto: buildFotoUrl(v.professor_foto),
+  }));
+}
+
+// =========================
+// ROTAS VAGAS
+// =========================
+
+// GET /api/ -> lista todas as vagas
 router.get('/', async (req, res) => {
   try {
-    const vagas = await query(`
-      SELECT v.*, p.nome AS professor_nome
-      FROM vagas v
-      LEFT JOIN professores p ON v.professor_id = p.id
-      WHERE v.ativo = 1
-      ORDER BY v.created_at DESC
-    `);
-
+    const vagas = await fetchVagas();
     res.json({
       success: true,
       vagas,
       total: vagas.length,
-      disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length
+      disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length,
     });
   } catch (error) {
-    console.error('Erro ao buscar vagas:', error);
+    console.error('Erro ao buscar vagas (/):', error);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
 
+// GET /api/vagas -> compatibilidade com frontend
+router.get('/vagas', async (req, res) => {
+  try {
+    const vagas = await fetchVagas();
+    res.json({
+      success: true,
+      vagas,
+      total: vagas.length,
+      disponiveis: vagas.filter(v => v.vagas_disponiveis > 0).length,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar vagas (/vagas):', error);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// GET /api/vagas/:id -> detalhe de uma vaga
 router.get('/vagas/:id', async (req, res) => {
   try {
-    const vaga = await get(`
-      SELECT v.*, p.nome AS professor_nome
+    const resultados = await get(`
+      SELECT v.*, p.nome AS professor_nome, p.foto AS professor_foto
       FROM vagas v
       LEFT JOIN professores p ON v.professor_id = p.id
       WHERE v.id = ? AND v.ativo = 1
     `, [req.params.id]);
 
-    if (!vaga) return res.status(404).json({ error: 'Vaga não encontrada' });
+    if (!resultados || resultados.length === 0) {
+      return res.status(404).json({ error: 'Vaga não encontrada' });
+    }
+
+    const vaga = resultados[0];
+
+    // Fallback de campos
+    vaga.professor_nome = vaga.professor_nome || 'Professor não definido';
+    vaga.professor_foto = buildFotoUrl(vaga.professor_foto);
+
     res.json(vaga);
   } catch (error) {
     console.error('Erro ao buscar vaga:', error);
@@ -55,9 +102,9 @@ router.get('/vagas/:id', async (req, res) => {
   }
 });
 
-// ======================
+// =========================
 // RESERVAS
-// ======================
+// =========================
 const camposReserva = ['vaga_id', 'nome', 'email', 'telefone'];
 
 router.post('/reservas', async (req, res) => {
@@ -67,45 +114,35 @@ router.post('/reservas', async (req, res) => {
   const { vaga_id, nome, email, telefone, nivel_aluno, objetivo } = req.body;
 
   try {
-    const vaga = await get('SELECT * FROM vagas WHERE id = ? AND ativo = 1', [vaga_id]);
-    if (!vaga) return res.status(404).json({ error: 'Vaga não encontrada' });
+    const vagaRes = await get('SELECT * FROM vagas WHERE id = ? AND ativo = 1', [vaga_id]);
+    if (!vagaRes || vagaRes.length === 0) return res.status(404).json({ error: 'Vaga não encontrada' });
+
+    const vaga = vagaRes[0];
     if (vaga.vagas_disponiveis <= 0) return res.status(400).json({ error: 'Vaga esgotada' });
 
     const reserva_id = 'RES' + Date.now() + Math.random().toString(36).slice(2, 9);
 
     await execute('START TRANSACTION');
 
-    await execute(
-      `INSERT INTO reservas 
-        (vaga_id, nome, email, telefone, nivel_aluno, objetivo, reserva_id, data_reserva, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), 'pendente', NOW(), NOW())`,
-      [vaga_id, nome, email, telefone, nivel_aluno || 'Não informado', objetivo || '', reserva_id]
-    );
+    await execute(`
+      INSERT INTO reservas 
+      (vaga_id, nome, email, telefone, nivel_aluno, objetivo, reserva_id, data_reserva, status, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), 'pendente', NOW(), NOW())
+    `, [vaga_id, nome, email, telefone, nivel_aluno || 'Não informado', objetivo || '', reserva_id]);
 
-    await execute(
-      'UPDATE vagas SET vagas_disponiveis = GREATEST(0, vagas_disponiveis - 1) WHERE id = ?',
-      [vaga_id]
-    );
+    await execute('UPDATE vagas SET vagas_disponiveis = GREATEST(0, vagas_disponiveis - 1) WHERE id = ?', [vaga_id]);
 
-    await execute(
-      'INSERT INTO atividades (tipo, descricao, usuario, data) VALUES (?, ?, ?, NOW())',
-      ['reserva', `Nova reserva: ${nome} para vaga ${vaga_id}`, 'sistema']
-    );
+    await execute(`
+      INSERT INTO atividades (tipo, descricao, usuario, data)
+      VALUES (?, ?, ?, NOW())
+    `, ['reserva', `Nova reserva: ${nome} para vaga ${vaga_id}`, 'sistema']);
 
     await execute('COMMIT');
 
-    res.status(201).json({
-      success: true,
-      message: 'Reserva criada com sucesso!',
-      reserva_id
-    });
+    res.status(201).json({ success: true, message: 'Reserva criada com sucesso!', reserva_id });
 
-    // Notificação em background
-    enviarNotificacaoReserva(
-      reserva_id,
-      { nome, email, telefone, nivel_aluno, objetivo },
-      vaga
-    );
+    // Notificação assíncrona
+    enviarNotificacaoReserva(reserva_id, { nome, email, telefone, nivel_aluno, objetivo }, vaga);
 
   } catch (error) {
     try { await execute('ROLLBACK'); } catch (e) {}
@@ -114,7 +151,9 @@ router.post('/reservas', async (req, res) => {
   }
 });
 
-// Helper: Enviar notificação de reserva
+// =========================
+// NOTIFICAÇÃO
+// =========================
 async function enviarNotificacaoReserva(reserva_id, dados, vaga) {
   try {
     const adminEmail = process.env.ADMIN_EMAIL;
