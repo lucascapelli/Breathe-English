@@ -1,5 +1,5 @@
 /**
- * admin-script.js - VERSÃO REFATORADA
+ * admin-script.js - VERSÃO SIMPLIFICADA
  * Sistema de gerenciamento administrativo
  */
 (function () {
@@ -18,7 +18,9 @@
     vagas: [],
     reservas: [],
     professores: [],
-    stats: {}
+    stats: {},
+    filtroAtual: 'all',
+    buscaAtual: ''
   };
 
   // ==================== UTILITÁRIOS DOM ====================
@@ -238,7 +240,7 @@
       try {
         const vagas = await API.get('/vagas');
         state.vagas = Array.isArray(vagas) ? vagas : [];
-        Renderers.vagas(state.vagas);
+        DataLoaders.atualizarExibicaoVagas();
       } catch (err) {
         console.error('Erro ao carregar vagas:', err);
         AlertManager.show('Erro ao carregar vagas', 'error');
@@ -266,6 +268,55 @@
         console.error('Erro ao carregar professores:', err);
         AlertManager.show('Erro ao carregar professores', 'error');
       }
+    },
+
+    atualizarExibicaoVagas() {
+      let vagasFiltradas = [...state.vagas];
+
+      // Aplicar filtro
+      if (state.filtroAtual === 'disponivel') {
+        vagasFiltradas = vagasFiltradas.filter(v => v.vagas_disponiveis > 0);
+      } else if (state.filtroAtual === 'esgotada') {
+        vagasFiltradas = vagasFiltradas.filter(v => v.vagas_disponiveis === 0);
+      }
+
+      // Aplicar busca
+      if (state.buscaAtual.trim()) {
+        const busca = state.buscaAtual.toLowerCase();
+        vagasFiltradas = vagasFiltradas.filter(vaga => {
+          return (
+            (vaga.titulo && vaga.titulo.toLowerCase().includes(busca)) ||
+            (vaga.professor_nome && vaga.professor_nome.toLowerCase().includes(busca)) ||
+            (vaga.horario && vaga.horario.toLowerCase().includes(busca)) ||
+            (vaga.nivel && vaga.nivel.toLowerCase().includes(busca)) ||
+            (vaga.dias && vaga.dias.toLowerCase().includes(busca))
+          );
+        });
+      }
+
+      Renderers.vagas(vagasFiltradas);
+      
+      // Atualizar contador
+      const counter = DOM.get('vagasCount');
+      if (counter) {
+        counter.textContent = vagasFiltradas.length;
+      }
+      
+      // Atualizar resumo
+      const summary = DOM.get('vagasSummary');
+      if (summary) {
+        summary.textContent = `(${vagasFiltradas.length} vaga${vagasFiltradas.length !== 1 ? 's' : ''})`;
+      }
+      
+      // Mostrar/ocultar estado vazio
+      const emptyState = DOM.get('emptyVagasState');
+      if (emptyState) {
+        if (vagasFiltradas.length === 0) {
+          emptyState.style.display = 'block';
+        } else {
+          emptyState.style.display = 'none';
+        }
+      }
     }
   };
 
@@ -291,34 +342,51 @@
       if (!container) return;
 
       if (!vagas?.length) {
-        container.innerHTML = '<div class="empty">Nenhuma vaga encontrada</div>';
+        container.innerHTML = '';
         return;
       }
 
-      container.innerHTML = vagas.map(v => `
-        <div class="vaga-item" data-id="${v.id}">
-          <div class="vaga-status ${v.vagas_disponiveis > 0 ? 'disponivel' : 'esgotada'}">
-            ${v.vagas_disponiveis} vaga(s)
-          </div>
-          <div class="vaga-info">
-            <h3>${AlertManager._escape(v.titulo || 'Sem título')}</h3>
-            <div class="vaga-meta">
-              <span>${AlertManager._escape(v.horario || '')}</span>
-              <span>${AlertManager._escape(v.dias || '')}</span>
-              <span>${AlertManager._escape(v.nivel || '')}</span>
-              <span>${AlertManager._escape(v.professor_nome || v.professor || 'Sem professor')}</span>
+      container.innerHTML = vagas.map(v => {
+        const status = v.vagas_disponiveis > 0 ? 'disponivel' : 'esgotada';
+        const statusText = v.vagas_disponiveis > 0 ? 'Disponível' : 'Esgotada';
+        
+        return `
+          <div class="vaga-admin-item" data-id="${v.id}" data-status="${status}">
+            <div class="vaga-content">
+              <div class="vaga-info">
+                <div class="vaga-title">${AlertManager._escape(v.titulo || 'Sem título')}</div>
+                <div class="vaga-details">
+                  <span class="vaga-detail">
+                    <i class="far fa-clock"></i>
+                    ${AlertManager._escape(v.horario || '')}
+                  </span>
+                  <span class="vaga-detail">
+                    <i class="far fa-calendar-alt"></i>
+                    ${AlertManager._escape(v.dias || '')}
+                  </span>
+                  <span class="vaga-detail">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    ${AlertManager._escape(v.professor_nome || v.professor || 'Sem professor')}
+                  </span>
+                  <span class="vaga-detail">
+                    <i class="fas fa-users"></i>
+                    ${v.vagas_disponiveis}/${v.vagas_totais || 0}
+                  </span>
+                </div>
+              </div>
+              <div class="vaga-actions">
+                <span class="vaga-status status-${status}">${statusText}</span>
+                <button class="action-icon-btn" data-action="edit" data-id="${v.id}" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-icon-btn" data-action="delete" data-id="${v.id}" title="Excluir">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </div>
           </div>
-          <div class="vaga-actions">
-            <button class="btn-icon edit" data-action="edit" data-id="${v.id}" title="Editar">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn-icon delete" data-action="delete" data-id="${v.id}" title="Excluir">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     },
 
     reservas(reservas) {
@@ -388,6 +456,166 @@
           </div>
         </div>
       `).join('');
+    }
+  };
+
+  // ==================== GERENCIADOR DE FILTROS ====================
+  const FilterManager = {
+    init() {
+      this.setupFiltros();
+      this.setupBusca();
+    },
+
+    setupFiltros() {
+      const filtros = document.querySelectorAll('.filter-tag');
+      filtros.forEach(filtro => {
+        filtro.addEventListener('click', (e) => {
+          e.preventDefault();
+          const filtroSelecionado = e.target.dataset.filter;
+          
+          // Atualizar estado
+          state.filtroAtual = filtroSelecionado;
+          
+          // Atualizar UI
+          filtros.forEach(f => f.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          // Aplicar filtro
+          DataLoaders.atualizarExibicaoVagas();
+        });
+      });
+    },
+
+    setupBusca() {
+      const searchInput = DOM.get('searchVagas');
+      if (!searchInput) return;
+
+      let timeoutId;
+      
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(timeoutId);
+        
+        timeoutId = setTimeout(() => {
+          state.buscaAtual = e.target.value.trim();
+          DataLoaders.atualizarExibicaoVagas();
+        }, 300);
+      });
+
+      // Limpar busca
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          e.target.value = '';
+          state.buscaAtual = '';
+          DataLoaders.atualizarExibicaoVagas();
+        }
+      });
+    }
+  };
+
+  // ==================== GERENCIADOR DE BACKUP ====================
+  const BackupManager = {
+    async exportar() {
+      try {
+        AlertManager.show('Gerando backup...', 'info');
+
+        const response = await fetch('/api/admin/backup/export', {
+          method: 'GET',
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao gerar backup');
+        }
+
+        const blob = await response.blob();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+        const filename = `backup-${timestamp}.json`;
+
+        // Download do arquivo
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        AlertManager.show('Backup exportado com sucesso!', 'success');
+      } catch (err) {
+        console.error('Erro ao exportar backup:', err);
+        AlertManager.show('Erro ao exportar backup', 'error');
+      }
+    },
+
+    abrirSeletorArquivo() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => this.importar(e.target.files[0]);
+      input.click();
+    },
+
+    async importar(file) {
+      if (!file) {
+        AlertManager.show('Nenhum arquivo selecionado', 'warning');
+        return;
+      }
+
+      if (!file.name.endsWith('.json')) {
+        AlertManager.show('Formato inválido. Use apenas arquivos .json', 'error');
+        return;
+      }
+
+      if (!confirm(
+        '⚠️ ATENÇÃO: Este processo irá SUBSTITUIR todos os dados atuais.\n\n' +
+        'Recomendamos fazer um backup antes de continuar.\n\n' +
+        'Deseja continuar?'
+      )) {
+        return;
+      }
+
+      try {
+        AlertManager.show('Importando backup...', 'info');
+
+        const formData = new FormData();
+        formData.append('backup', file);
+
+        const response = await fetch('/api/admin/backup/import', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Erro ao importar backup');
+        }
+
+        const result = await response.json();
+
+        AlertManager.show(
+          `Backup importado com sucesso!\n\n` +
+          `Professores: ${result.professores || 0}\n` +
+          `Vagas: ${result.vagas || 0}\n` +
+          `Reservas: ${result.reservas || 0}`,
+          'success'
+        );
+
+        // Recarregar todos os dados
+        setTimeout(async () => {
+          await Promise.all([
+            DataLoaders.stats(),
+            DataLoaders.vagas(),
+            DataLoaders.reservas(),
+            DataLoaders.professores()
+          ]);
+        }, 1000);
+
+      } catch (err) {
+        console.error('Erro ao importar backup:', err);
+        AlertManager.show('Erro ao importar backup: ' + err.message, 'error');
+      }
     }
   };
 
@@ -524,6 +752,12 @@
     setupVagasActions() {
       // Botão abrir nova vaga
       DOM.get('abrirNovaVagaBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        ModalManager.open('novaVagaModal');
+      });
+
+      // Botão criar primeira vaga (estado vazio)
+      DOM.get('createFirstVagaBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         ModalManager.open('novaVagaModal');
       });
@@ -927,6 +1161,18 @@
         }
       });
 
+      // Exportar Backup
+      DOM.get('exportBackupBtn')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await BackupManager.exportar();
+      });
+
+      // Importar Backup
+      DOM.get('importBackupBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        BackupManager.abrirSeletorArquivo();
+      });
+
       // Logout
       DOM.get('logoutBtn')?.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -1008,6 +1254,9 @@
     EventHandlers.setupProfessoresActions();
     EventHandlers.setupConfigActions();
     EventHandlers.setupDashboardActions();
+
+    // Inicializar filtros
+    FilterManager.init();
 
     // Carregar dados iniciais
     try {

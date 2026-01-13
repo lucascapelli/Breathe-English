@@ -1337,4 +1337,128 @@ img {
   color: white;
 }
 
+/* ===== ESTILOS SIMPLES PARA VAGAS ===== */
+
+/* Apenas o necessário para os filtros */
+.filter-tag.action-btn {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.filter-tag.action-btn:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+
+.filter-tag.action-btn.active {
+  background: var(--accent-grad);
+  color: white;
+  border-color: transparent;
+}
+
+/* Apenas para o item de vaga */
+.vaga-item {
+  background: var(--panel);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-soft);
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.vaga-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.vaga-item[data-status="disponivel"] {
+  border-left-color: #10b981;
+}
+
+.vaga-item[data-status="esgotada"] {
+  border-left-color: #ef4444;
+}
+
+/* Layout interno da vaga */
+.vaga-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.vaga-info {
+  flex: 1;
+}
+
+.vaga-title {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.vaga-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.vaga-detail {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.vaga-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Status badge minimalista */
+.vaga-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-disponivel {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-esgotada {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .vaga-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .vaga-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
 }
