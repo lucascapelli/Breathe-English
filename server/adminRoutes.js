@@ -59,13 +59,15 @@ router.get('/stats', async (req, res) => {
   try {
     const stats = await get(`
       SELECT 
-        (SELECT COUNT(*) FROM vagas WHERE ativo = 1) total_vagas,
-        (SELECT COUNT(*) FROM reservas) total_reservas,
-        (SELECT COUNT(*) FROM reservas WHERE DATE(data_reserva) = CURDATE()) reservas_hoje,
-        (SELECT COUNT(*) FROM vagas WHERE vagas_disponiveis = 0 AND ativo = 1) vagas_esgotadas
+        (SELECT COUNT(*) FROM vagas WHERE ativo = 1) as total_vagas,
+        (SELECT SUM(vagas_disponiveis) FROM vagas WHERE ativo = 1) as vagas_disponiveis,
+        (SELECT COUNT(*) FROM reservas WHERE status = 'confirmada') as total_reservas,
+        (SELECT COUNT(*) FROM reservas WHERE status = 'confirmada' AND DATE(data_reserva) = CURDATE()) as reservas_hoje,
+        (SELECT COUNT(*) FROM vagas WHERE vagas_disponiveis = 0 AND ativo = 1) as vagas_esgotadas
     `);
     res.json(stats);
-  } catch {
+  } catch (err) {
+    console.error('Erro ao carregar stats:', err);
     res.status(500).json({ error: 'Erro interno' });
   }
 });
@@ -191,6 +193,33 @@ router.delete('/vagas/:id', async (req, res) => {
 
   await execute('DELETE FROM vagas WHERE id = ?', [id]);
   res.json({ success: true });
+});
+
+// =====================
+// RESETAR VAGAS
+// =====================
+router.post('/vagas/reset-all', async (req, res) => {
+  try {
+    await execute(`
+      UPDATE vagas 
+      SET vagas_disponiveis = vagas_totais 
+      WHERE ativo = 1
+    `);
+
+    await registrarAtividade(
+      'vaga',
+      'Todas as vagas foram resetadas',
+      req.session.username
+    );
+
+    res.json({ 
+      success: true, 
+      message: 'Todas as vagas foram resetadas com sucesso' 
+    });
+  } catch (err) {
+    console.error('Erro ao resetar vagas:', err);
+    res.status(500).json({ error: 'Erro ao resetar vagas' });
+  }
 });
 
 // =====================

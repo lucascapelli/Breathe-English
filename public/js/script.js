@@ -6,6 +6,73 @@ let vagas = [];
 let vagaAtual = null;
 
 // =========================
+// SISTEMA DE ALERTA PERSONALIZADO
+// =========================
+function showAlert(message, type = 'info', title = null) {
+    const modal = document.getElementById('alertModal');
+    const messageEl = document.getElementById('alertMessage');
+    const titleEl = document.getElementById('alertTitle');
+    const iconEl = document.getElementById('alertIcon');
+    const closeBtn = document.getElementById('alertCloseButton');
+    
+    // Configurar tipo de alerta
+    modal.className = 'custom-alert-modal ' + type;
+    
+    // Definir título baseado no tipo
+    if (!title) {
+        switch(type) {
+            case 'error': title = 'Erro'; break;
+            case 'success': title = 'Sucesso!'; break;
+            case 'warning': title = 'Atenção'; break;
+            default: title = 'Informação';
+        }
+    }
+    
+    // Configurar ícone baseado no tipo
+    let iconClass = 'fas fa-info-circle';
+    switch(type) {
+        case 'error': iconClass = 'fas fa-exclamation-circle'; break;
+        case 'success': iconClass = 'fas fa-check-circle'; break;
+        case 'warning': iconClass = 'fas fa-exclamation-triangle'; break;
+    }
+    
+    iconEl.innerHTML = `<i class="${iconClass}"></i>`;
+    
+    // Configurar conteúdo
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Mostrar modal
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Configurar botão de fechar
+    closeBtn.onclick = function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+    
+    // Fechar ao clicar fora (opcional)
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
+    
+    // Fechar com ESC
+    const closeOnEsc = function(e) {
+        if (e.key === 'Escape') {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.removeEventListener('keydown', closeOnEsc);
+        }
+    };
+    
+    document.addEventListener('keydown', closeOnEsc);
+}
+
+// =========================
 // UTILITÁRIOS
 // =========================
 const formatarRestante = n => 
@@ -198,30 +265,56 @@ function fecharModal() {
 // =========================
 async function enviarFormulario(e) {
     e.preventDefault();
-    if (!vagaAtual) return alert('Nenhuma vaga selecionada.');
+    if (!vagaAtual) return showAlert('Nenhuma vaga selecionada.', 'warning');
 
     const dados = ['nome','email','telefone','nivel','objetivo'].reduce((obj,id) => {
         obj[id === 'nivel' ? 'nivel_aluno' : id] = document.getElementById(id)?.value.trim() || '';
         return obj;
     }, { vaga_id: vagaAtual.id });
 
-    if (!dados.nome || !dados.email || !dados.telefone) return alert('Preencha todos os campos obrigatórios.');
+    if (!dados.nome || !dados.email || !dados.telefone) return showAlert('Preencha todos os campos obrigatórios.', 'warning');
 
-    const btn = e.target.querySelector('button[type="submit"]');
-    const original = btn.textContent;
+    const btn = e.target.querySelector('button[type="submit"]'); 
+    const original = btn.textContent; 
     btn.disabled = true; btn.textContent = 'Processando...';
 
     try {
         const res = await criarReserva(dados);
-        alert(`✅ Reserva criada com sucesso! ID: ${res.reserva_id || res.message}`);
+        showAlert(`Reserva criada com sucesso!`, 'success');
         fecharModal();
         e.target.reset();
         renderizarVagas();
     } catch (err) {
-        alert(`Erro: ${err.message}`);
+        showAlert(`Erro: ${err.message}`, 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = original;
+    }
+}
+
+function abrirWhatsApp() {
+    // Número no formato correto: código país + DDD + número (sem zeros extras)
+    const seuNumero = '5511949438693'; // Brasil (55) + DDD 11 + 949438693
+    
+    // Verifica se o número tem pelo menos 10 dígitos
+    if (seuNumero.length < 10) {
+        showAlert('Número de WhatsApp inválido. Entre em contato pelo email.', 'warning');
+        return;
+    }
+    
+    // Mensagem pré-definida
+    const mensagem = 'Olá! Vi que vocês oferecem aulas de inglês e gostaria de mais informações.';
+    
+    // Formata para URL do WhatsApp
+    const url = `https://api.whatsapp.com/send?phone=${seuNumero}&text=${encodeURIComponent(mensagem)}`;
+    
+    // Abre em nova aba
+    window.open(url, '_blank');
+    
+    // Fecha o modal se estiver aberto
+    const modal = document.getElementById('reservaModal');
+    if (modal && modal.style.display === 'flex') {
+        fecharModal();
     }
 }
 
@@ -239,3 +332,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.abrirModal = abrirModal;
 window.fecharModal = fecharModal;
 window.recarregarVagas = renderizarVagas;
+window.showAlert = showAlert;

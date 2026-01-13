@@ -918,4 +918,423 @@ img {
   .prof-meta small {
     font-size: 0.85rem;
   }
+  /* ===== RESPONSIVIDADE PARA TABELA DE RESERVAS ===== */
+
+/* Desktop - mantém tabela normal */
+@media (min-width: 769px) {
+  .reservas-table-container {
+    overflow-x: auto;
+  }
+  
+  .reservas-mobile-cards {
+    display: none;
+  }
+}
+
+/* Mobile - transforma em cards */
+@media (max-width: 768px) {
+  /* Esconde a tabela no mobile */
+  .reservas-table-container {
+    display: none;
+  }
+  
+  /* Container de cards mobile */
+  .reservas-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+  }
+  
+  /* Card individual de reserva */
+  .reserva-mobile-card {
+    background: var(--panel);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-soft);
+    border-left: 4px solid var(--accent-1);
+    position: relative;
+  }
+  
+  /* Header do card com ID e status */
+  .reserva-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .reserva-card-id {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--accent-1);
+    font-weight: bold;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  
+  /* Corpo do card com informações */
+  .reserva-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .reserva-card-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  
+  .reserva-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .reserva-card-value {
+    font-size: 0.95rem;
+    color: #1e293b;
+    word-break: break-word;
+  }
+  
+  /* Ações do card */
+  .reserva-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+  }
+  
+  .reserva-card-actions button {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-confirmar {
+    background: var(--success);
+    color: white;
+  }
+  
+  .btn-confirmar:active {
+    transform: scale(0.95);
+    background: var(--success-dark);
+  }
+  
+  .btn-visualizar {
+    background: var(--info);
+    color: white;
+  }
+  
+  .btn-visualizar:active {
+    transform: scale(0.95);
+    background: var(--info-dark);
+  }
+  
+  .btn-excluir {
+    background: var(--danger);
+    color: white;
+  }
+  
+  .btn-excluir:active {
+    transform: scale(0.95);
+    background: var(--danger-dark);
+  }
+  
+  /* Status badges no mobile */
+  .reserva-card-header .status-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  
+  /* Ajustes na search box */
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    width: 100%;
+  }
+  
+  /* Empty state */
+  .reservas-mobile-cards .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+    font-style: italic;
+  }
+}
+
+/* Ajuste extra para telas muito pequenas */
+@media (max-width: 480px) {
+  .reserva-card-actions {
+    flex-direction: column;
+  }
+  
+  .reserva-card-actions button {
+    width: 100%;
+    min-width: auto;
+  }
+}
+  /* ===== RESPONSIVIDADE PARA TABELA DE RESERVAS ===== */
+
+/* Desktop - mantém tabela normal */
+@media (min-width: 769px) {
+  .reservas-table-container {
+    overflow-x: auto;
+  }
+  
+  .reservas-mobile-cards {
+    display: none;
+  }
+}
+
+/* Mobile - transforma em cards */
+@media (max-width: 768px) {
+  /* Esconde a tabela no mobile */
+  .reservas-table-container {
+    display: none;
+  }
+  
+  /* Container de cards mobile */
+  .reservas-mobile-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+  }
+  
+  /* Card individual de reserva */
+  .reserva-mobile-card {
+    background: var(--panel);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: var(--shadow-soft);
+    border-left: 4px solid var(--accent-1);
+    position: relative;
+  }
+  
+  /* Header do card com ID e status */
+  .reserva-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .reserva-card-id {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--accent-1);
+    font-weight: bold;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  
+  /* Corpo do card com informações */
+  .reserva-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  
+  .reserva-card-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  
+  .reserva-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .reserva-card-value {
+    font-size: 0.95rem;
+    color: #1e293b;
+    word-break: break-word;
+  }
+  
+  /* Ações do card */
+  .reserva-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+  }
+  
+  .reserva-card-actions button {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-confirmar {
+    background: var(--success);
+    color: white;
+  }
+  
+  .btn-confirmar:active {
+    transform: scale(0.95);
+    background: var(--success-dark);
+  }
+  
+  .btn-visualizar {
+    background: var(--info);
+    color: white;
+  }
+  
+  .btn-visualizar:active {
+    transform: scale(0.95);
+    background: var(--info-dark);
+  }
+  
+  .btn-excluir {
+    background: var(--danger);
+    color: white;
+  }
+  
+  .btn-excluir:active {
+    transform: scale(0.95);
+    background: var(--danger-dark);
+  }
+  
+  /* Status badges no mobile */
+  .reserva-card-header .status-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+  
+  /* Ajustes na search box */
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .search-box {
+    width: 100%;
+  }
+  
+  /* Empty state */
+  .reservas-mobile-cards .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6b7280;
+    font-style: italic;
+  }
+}
+
+/* Ajuste extra para telas muito pequenas */
+@media (max-width: 480px) {
+  .reserva-card-actions {
+    flex-direction: column;
+  }
+  
+  .reserva-card-actions button {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Estilos para os botões de ação na tabela desktop */
+.table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-small {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn-small.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-small.btn-success:hover {
+  background: var(--success-dark);
+  transform: translateY(-1px);
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: #f3f4f6;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--info);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-icon.btn-danger {
+  background: #fee;
+  color: var(--danger);
+}
+
+.btn-icon.btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
 }

@@ -11,90 +11,297 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <meta name="description" content="Reserve sua vaga para aulas de inglês com professores nativos. Últimas vagas disponíveis com preços especiais. Aprenda inglês de forma rápida e eficiente.">
+    <meta property="og:title" content="Vagas LIMITADAS para Aulas de Inglês - Reserve Agora!">
+    <meta property="og:description" content="Últimas oportunidades para aprender inglês com professores qualificados. Vagas estão acabando!">
+    <meta property="og:image" content="/img/og-image.jpg">
+    <meta property="og:url" content="https://seusite.com">
+    <meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body>
+    <!-- Header com contador de tempo -->
     <div class="container">
         <div class="header">
+            <div class="urgency-badge">
+                <i class="fas fa-clock"></i>
+                <span class="urgency-text">OFERTA POR TEMPO LIMITADO</span>
+            </div>
             <h1>📚 Vagas LIMITADAS para Aulas de Inglês</h1>
-            <p>Reserve seu horário agora mesmo - Últimas oportunidades!</p>
+            <p class="subtitle">Reserve seu horário agora mesmo - Últimas oportunidades antes do aumento de preço!</p>
+
+            <div class="social-proof">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-number">+500</span>
+                        <span class="stat-label">Alunos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Aprovação</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">4.9</span>
+                        <span class="stat-label">⭐ Avaliação</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Contador regressivo -->
+        <div class="countdown-container">
+            <div class="countdown-title">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Vagas disponíveis por tempo limitado:</span>
+            </div>
+            <div class="countdown" id="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">12</span>
+                    <span class="countdown-label">Horas</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">45</span>
+                    <span class="countdown-label">Minutos</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">30</span>
+                    <span class="countdown-label">Segundos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de benefícios -->
+        <section class="benefits-section">
+            <h2 class="section-title">
+                <i class="fas fa-award"></i>
+                Por que escolher nossas aulas?
+            </h2>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Professor Dedicado</h3>
+                    <p>Aulas personalizadas com foco no seu aprendizado</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Flexibilidade</h3>
+                    <p>Horários que se adaptam à sua rotina</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Resultados Rápidos</h3>
+                    <p>Método comprovado que acelera o aprendizado</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Suporte dedicado em horário comercial</h3>
+                    <p>Nossa equipe está pronta para ajudá-lo durante o horário de atendimento</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard principal -->
         <div class="dashboard">
             <div class="dashboard-header">
                 <div class="total-vagas">
-                    Vagas disponíveis: <span id="totalVagas">0</span>
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Vagas disponíveis: <strong id="totalVagas">0</strong></span>
                 </div>
                 <div class="countdown-warning">
-                    ⚠️ URGENTE: VAGAS ESTÃO ACABANDO!
+                    <i class="fas fa-exclamation-triangle"></i>
+                    URGENTE: VAGAS ESTÃO ACABANDO!
                 </div>
             </div>
 
             <div class="vagas-grid" id="vagasGrid">
                 <!-- Vagas serão geradas via JavaScript -->
             </div>
+
+            <div class="pricing-info">
+                <i class="fas fa-info-circle"></i>
+                <span>Todos os preços garantem aulas de conversação</span>
+            </div>
         </div>
 
+        <section class="testimonials-section">
+            <h2 class="section-title">
+                <i class="fas fa-comment"></i>
+                O que meus alunos dizem
+            </h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Maria Silva"
+                            class="testimonial-avatar">
+                        <div>
+                            <h4>Maria Silva</h4>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">"Em poucas aulas já me sinto confiante para conversar em inglês. As
+                        explicações são claras e diretas!"</p>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <img src="https://randomuser.me/api/portraits/men/54.jpg" alt="João Santos"
+                            class="testimonial-avatar">
+                        <div>
+                            <h4>João Santos</h4>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">"Aulas flexíveis e focadas na conversação. Aprendo no meu ritmo e sem
+                        complicação."</p>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Ana Costa"
+                            class="testimonial-avatar">
+                        <div>
+                            <h4>Ana Costa</h4>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">"As aulas são práticas e diretas. Sinto que estou realmente melhorando a
+                        cada semana!"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <h2 class="section-title">
+                <i class="fas fa-question-circle"></i>
+                Perguntas Frequentes
+            </h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Como funciona o pagamento?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Você pode pagar via PIX. O pagamento é mensal e você pode cancelar a qualquer momento.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Posso reagendar as aulas?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sim! Você tem até 2 reagendamentos por mês sem custo adicional dada a disponibilidade do
+                            professor.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Preciso comprar material?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Não! Primariamente, a metodologia foca em associação de palavras e conversação; atividades
+                            escritas serão em módulos avançados.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <div id="successMessage" class="success-message">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
             <h3>🎉 Parabéns! Reserva confirmada!</h3>
             <p>Em breve entraremos em contato para confirmar os detalhes da sua aula.</p>
+            <p class="success-details">Você receberá um e-mail com todas as informações em até 10 minutos.</p>
+            <button class="btn-close-success" onclick="fecharSuccess()">OK</button>
         </div>
 
         <!-- Modal de Reserva -->
         <div id="reservaModal" class="modal">
             <div class="modal-content">
-                <h2>Confirmar Reserva</h2>
-                <p>Preencha seus dados para reservar esta vaga:</p>
+                <button class="modal-close" onclick="fecharModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <h2><i class="fas fa-calendar-check"></i> Confirmar Reserva</h2>
+                <p class="modal-subtitle">Preencha seus dados para garantir sua vaga:</p>
 
                 <div class="modal-info" id="modalInfo">
                     <!-- Informações da vaga -->
                 </div>
 
+                <div class="modal-guarantee">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Reserva 100% segura - Seu pagamento só será realizado após a confirmação da vaga</span>
+                </div>
+
                 <form id="reservaForm">
-                    <div class="form-group">
-                        <label for="nome">Nome completo *</label>
-                        <input type="text" id="nome" required placeholder="Seu nome completo">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nome">
+                                <i class="fas fa-user"></i> Nome completo *
+                            </label>
+                            <input type="text" id="nome" required placeholder="Seu nome completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fas fa-envelope"></i> E-mail *
+                            </label>
+                            <input type="email" id="email" required placeholder="seu@email.com">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefone">
+                                <i class="fas fa-phone"></i> WhatsApp *
+                            </label>
+                            <input type="tel" id="telefone" required placeholder="(11) 99999-9999">
+                        </div>
+                        <div class="form-group">
+                            <label for="nivel">
+                                <i class="fas fa-graduation-cap"></i> Seu nível de inglês *
+                            </label>
+                            <select id="nivel" required>
+                                <option value="">Selecione seu nível</option>
+                                <option value="Iniciante">Iniciante (não sei nada ou sei pouco)</option>
+                                <option value="Basico">Básico (consigo me apresentar e frases simples)</option>
+                                <option value="Intermediario">Intermediário (converso sobre assuntos do dia a dia)</option>
+                                <option value="Avançado">Avançado (quero aperfeiçoar)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="email">E-mail *</label>
-                        <input type="email" id="email" required placeholder="seu@email.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="telefone">WhatsApp *</label>
-                        <input type="tel" id="telefone" required placeholder="(11) 99999-9999">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nivel">Qual seu nível de inglês? *</label>
-                        <select id="nivel" required>
-                            <option value="">Selecione seu nível</option>
-                            <option value="Iniciante">Iniciante (não sei nada ou sei pouco)</option>
-                            <option value="Basico">Básico (consigo me apresentar e falar frases simples)</option>
-                            <option value="Intermediario">Intermediário (consigo conversar sobre assuntos do dia a dia)
-                            </option>
-                            <option value="Avançado">Avançado (consigo me expressar bem, mas quero aperfeiçoar)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="objetivo">Qual seu principal objetivo com as aulas? *</label>
-                        <textarea id="objetivo" required placeholder="Ex: Viagem, trabalho, vestibular, etc."
+                        <label for="objetivo">
+                            <i class="fas fa-bullseye"></i> Qual seu principal objetivo? *
+                        </label>
+                        <textarea id="objetivo" required
+                            placeholder="Ex: Preparação para viagem, promoção no trabalho, vestibular, conversação..."
                             rows="3"></textarea>
                     </div>
 
                     <div class="form-group checkbox">
                         <input type="checkbox" id="termos" required>
-                        <label for="termos">Concordo em receber informações sobre as aulas e confirmo que esta reserva é
-                            limitada e sujeita à disponibilidade.</label>
+                        <label for="termos">
+                            Concordo em receber informações sobre as aulas e confirmo que esta reserva é limitada.
+                            <a href="#" class="terms-link">Termos de uso</a>
+                        </label>
                     </div>
 
                     <div class="modal-buttons">
-                        <button type="button" class="modal-button cancelar" onclick="fecharModal()">Cancelar</button>
+                        <button type="button" class="modal-button cancelar" onclick="fecharModal()">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
                         <button type="submit" class="modal-button confirmar">
-                            <span class="button-text">RESERVAR MINHA VAGA</span>
+                            <i class="fas fa-lock"></i>
+                            <span class="button-text">GARANTIR MINHA VAGA</span>
                             <span class="button-icon">🎯</span>
                         </button>
                     </div>
@@ -102,14 +309,134 @@
             </div>
         </div>
 
-
         <!-- Botão Flutuante do WhatsApp -->
         <div class="whatsapp-float" onclick="abrirWhatsApp()">
-            <i class="fab fa-whatsapp" style="font-size: 32px;"></i>
-            <span>Dúvidas? Fale conosco</span>
+            <div class="whatsapp-bubble">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <span class="whatsapp-text">Precisa de ajuda?</span>
         </div>
 
-        <script src="/js/script.js"></script>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <!-- Sobre as aulas -->
+                <div class="footer-section">
+                    <h4><i class="fas fa-graduation-cap"></i> Aulas de Inglês</h4>
+                    <p>Inglês focado em conversação, com atenção personalizada para você evoluir rápido.</p>
+                </div>
+
+                <!-- Contato e redes sociais -->
+                <div class="footer-section">
+                    <h4><i class="fas fa-envelope"></i> Contato</h4>
+                    <p>alcantaraminacapellilucas@gmail.com</p>
+                    <p>(11) 94943-8693</p>
+                    <div class="footer-links">
+                        <a href="https://instagram.com/lucas.fullstack" target="_blank">Instagram</a>
+                        <a href="https://www.linkedin.com/in/lucas-alcantara-mina-capelli-63a5b420b/"
+                            target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+
+                <!-- Horário de atendimento -->
+                <div class="footer-section">
+                    <h4><i class="fas fa-clock"></i> Horário de Atendimento</h4>
+                    <p>Segunda a Sexta: 8h às 20h</p>
+                    <p>Sábado: 9h às 16h</p>
+                </div>
+
+                <!-- Desenvolvedor -->
+                <div class="footer-section">
+                    <h4><i class="fas fa-code"></i> Desenvolvedor</h4>
+                    <p>Site programado do zero por Lucas Capelli</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Teacher Lucas. Todos os direitos reservados.</p>
+                <div class="footer-links">
+                    <a href="#">Política de Privacidade</a>
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">FAQ</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Loading overlay -->
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando vagas disponíveis...</p>
+            </div>
+        </div>
+        
+        <!-- Modal de Alerta Personalizado -->
+        <div id="alertModal" class="custom-alert-modal">
+            <div class="custom-alert-content">
+                <div class="custom-alert-icon" id="alertIcon">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h3 id="alertTitle">Informação</h3>
+                <p id="alertMessage">Mensagem de alerta aqui</p>
+                <button id="alertCloseButton" class="custom-alert-button">
+                    <i class="fas fa-check"></i> OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        // Contador regressivo
+        function updateCountdown() {
+            const hoursElement = document.getElementById('hours');
+            const minutesElement = document.getElementById('minutes');
+            const secondsElement = document.getElementById('seconds');
+
+            let hours = parseInt(hoursElement.textContent);
+            let minutes = parseInt(minutesElement.textContent);
+            let seconds = parseInt(secondsElement.textContent);
+
+            seconds--;
+            if (seconds < 0) {
+                seconds = 59;
+                minutes--;
+                if (minutes < 0) {
+                    minutes = 59;
+                    hours--;
+                    if (hours < 0) {
+                        hours = 0;
+                        minutes = 0;
+                        seconds = 0;
+                    }
+                }
+            }
+
+            hoursElement.textContent = hours.toString().padStart(2, '0');
+            minutesElement.textContent = minutes.toString().padStart(2, '0');
+            secondsElement.textContent = seconds.toString().padStart(2, '0');
+        }
+
+        // Iniciar contador
+        setInterval(updateCountdown, 1000);
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const icon = question.querySelector('i');
+
+                answer.classList.toggle('active');
+                icon.classList.toggle('fa-chevron-down');
+                icon.classList.toggle('fa-chevron-up');
+            });
+        });
+
+        // Fechar mensagem de sucesso
+        function fecharSuccess() {
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
 </body>
 
 </html>

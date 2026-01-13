@@ -24,7 +24,13 @@ function buildFotoUrl(foto) {
 // Query centralizada para pegar vagas ativas
 async function fetchVagas() {
   const vagas = await query(`
-    SELECT v.*, p.nome AS professor_nome, p.foto AS professor_foto
+    SELECT 
+      v.*, 
+      p.nome AS professor_nome, 
+      p.foto AS professor_foto,
+      p.preco AS professor_preco,
+      p.email AS professor_email,
+      p.telefone AS professor_telefone
     FROM vagas v
     LEFT JOIN professores p ON v.professor_id = p.id
     WHERE v.ativo = 1
@@ -34,8 +40,11 @@ async function fetchVagas() {
   // Garante que fotos e nomes tenham fallback
   return vagas.map(v => ({
     ...v,
-    professor_nome: v.professor_nome || 'Professor não definido',
+    professor: v.professor_nome || 'Professor não definido',
     professor_foto: buildFotoUrl(v.professor_foto),
+    preco: v.professor_preco || null,
+    professor_email: v.professor_email || null,
+    professor_telefone: v.professor_telefone || null,
   }));
 }
 
@@ -79,7 +88,13 @@ router.get('/vagas', async (req, res) => {
 router.get('/vagas/:id', async (req, res) => {
   try {
     const resultados = await get(`
-      SELECT v.*, p.nome AS professor_nome, p.foto AS professor_foto
+      SELECT 
+        v.*, 
+        p.nome AS professor_nome, 
+        p.foto AS professor_foto,
+        p.preco AS professor_preco,
+        p.email AS professor_email,
+        p.telefone AS professor_telefone
       FROM vagas v
       LEFT JOIN professores p ON v.professor_id = p.id
       WHERE v.id = ? AND v.ativo = 1
@@ -92,8 +107,11 @@ router.get('/vagas/:id', async (req, res) => {
     const vaga = resultados[0];
 
     // Fallback de campos
-    vaga.professor_nome = vaga.professor_nome || 'Professor não definido';
+    vaga.professor = vaga.professor_nome || 'Professor não definido';
     vaga.professor_foto = buildFotoUrl(vaga.professor_foto);
+    vaga.preco = vaga.professor_preco || null;
+    vaga.professor_email = vaga.professor_email || null;
+    vaga.professor_telefone = vaga.professor_telefone || null;
 
     res.json(vaga);
   } catch (error) {
@@ -103,7 +121,7 @@ router.get('/vagas/:id', async (req, res) => {
 });
 
 // =========================
-// RESERVAS
+// RESERVAS - VERSÃO CORRIGIDA
 // =========================
 const camposReserva = ['vaga_id', 'nome', 'email', 'telefone'];
 
@@ -114,11 +132,26 @@ router.post('/reservas', async (req, res) => {
   const { vaga_id, nome, email, telefone, nivel_aluno, objetivo } = req.body;
 
   try {
-    const vagaRes = await get('SELECT * FROM vagas WHERE id = ? AND ativo = 1', [vaga_id]);
-    if (!vagaRes || vagaRes.length === 0) return res.status(404).json({ error: 'Vaga não encontrada' });
+    // MUDANÇA: usar query() em vez de get() para garantir resultado consistente
+    const vagaRes = await query('SELECT * FROM vagas WHERE id = ? AND ativo = 1', [vaga_id]);
+    
+    console.log('DEBUG - vagaRes:', vagaRes); // Log para debug
+    
+    if (!vagaRes || vagaRes.length === 0) {
+      return res.status(404).json({ error: 'Vaga não encontrada' });
+    }
 
     const vaga = vagaRes[0];
-    if (vaga.vagas_disponiveis <= 0) return res.status(400).json({ error: 'Vaga esgotada' });
+    
+    // Validação adicional para garantir que vaga tem a propriedade
+    if (typeof vaga.vagas_disponiveis === 'undefined') {
+      console.error('Erro: vaga sem vagas_disponiveis', vaga);
+      return res.status(500).json({ error: 'Dados da vaga incompletos' });
+    }
+    
+    if (vaga.vagas_disponiveis <= 0) {
+      return res.status(400).json({ error: 'Vaga esgotada' });
+    }
 
     const reserva_id = 'RES' + Date.now() + Math.random().toString(36).slice(2, 9);
 
@@ -145,9 +178,13 @@ router.post('/reservas', async (req, res) => {
     enviarNotificacaoReserva(reserva_id, { nome, email, telefone, nivel_aluno, objetivo }, vaga);
 
   } catch (error) {
-    try { await execute('ROLLBACK'); } catch (e) {}
+    try { 
+      await execute('ROLLBACK'); 
+    } catch (e) {
+      console.error('Erro no ROLLBACK:', e);
+    }
     console.error('Erro ao criar reserva:', error);
-    res.status(500).json({ error: 'Erro interno' });
+    res.status(500).json({ error: 'Erro interno ao processar reserva' });
   }
 });
 
