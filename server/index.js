@@ -7,6 +7,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const MySQLStore = require('express-mysql-session')(session);
 
+// projectRoot precisa ser declarado antes de qualquer uso
+const projectRoot = path.resolve(__dirname, '..');
+
 const { initializeDatabase, query } = require('./database');
 const authRoutes = require('./auth');
 const adminRoutes = require('./adminRoutes');
@@ -16,7 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /* ==========================
-   PATHS
+  PATHS
 ========================== */
 const publicDir = path.join(projectRoot, 'public');
 const adminDir = path.join(projectRoot, 'admin');
