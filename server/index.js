@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 3000;
 /* ==========================
    PATHS
 ========================== */
-const projectRoot = path.resolve(__dirname, '..');
 const publicDir = path.join(projectRoot, 'public');
 const adminDir = path.join(projectRoot, 'admin');
 const uploadsDir = path.join(publicDir, 'uploads');
@@ -101,7 +100,6 @@ app.use('/uploads', (req, res, next) => {
 
 app.use(express.static(publicDir, { maxAge: 86400000, index: 'index.html' }));
 // Servir arquivos de upload (imagens) corretamente em produção
-const projectRoot = path.resolve(__dirname, '..');
 app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
 app.use('/api', publicRoutes);
 /* ==========================
