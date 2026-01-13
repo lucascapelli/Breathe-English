@@ -415,7 +415,7 @@
               <button class="btn-icon" data-action="view-reserva" data-id="${r.id}" title="Visualizar">
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="btn-icon btn-danger" data-action="delete-reserva" data-id="${r.id}" title="Excluir">
+              <button class="btn-icon btn-danger" data-action="delete-reserva" data-reserva-id="${r.reserva_id}" title="Excluir">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -656,10 +656,10 @@
       AlertManager.show('Reserva confirmada com sucesso', 'success');
     },
 
-    async deleteReserva(id) {
+    async deleteReserva(reservaId) {
       if (!confirm('Tem certeza que deseja excluir esta reserva?\n\nEsta ação não pode ser desfeita.')) return;
 
-      await API.delete(`/reservas/${id}`);
+      await API.delete(`/reservas/${reservaId}`);
       await Promise.all([DataLoaders.reservas(), DataLoaders.stats()]);
       AlertManager.show('Reserva excluída com sucesso', 'success');
     },
@@ -900,7 +900,7 @@
           }
 
           if (btn.dataset.action === 'delete-reserva') {
-            await Actions.deleteReserva(btn.dataset.id);
+            await Actions.deleteReserva(btn.dataset.reservaId);
           }
         } catch (err) {
           AlertManager.show('Erro: ' + err.message, 'error');

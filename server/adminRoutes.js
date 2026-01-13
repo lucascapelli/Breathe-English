@@ -245,12 +245,13 @@ router.delete('/reservas/:reserva_id', async (req, res) => {
   const reserva = await get('SELECT * FROM reservas WHERE reserva_id = ?', [reserva_id]);
   if (!reserva) return res.status(404).json({ error: 'Reserva não encontrada' });
 
-  if (reserva.status === 'confirmada') {
-    await execute(
-      'UPDATE vagas SET vagas_disponiveis = vagas_disponiveis + 1 WHERE id = ?',
-      [reserva.vaga_id]
-    );
-  }
+    console.log('[RESERVA] Dados da reserva ao deletar:', reserva);
+    console.log('[RESERVA] vaga_id:', reserva?.vaga_id);
+  const updateResult = await execute(
+    'UPDATE vagas SET vagas_disponiveis = vagas_disponiveis + 1 WHERE id = ?',
+    [reserva.vaga_id]
+  );
+  console.log(`[RESERVA] Vaga liberada: vaga_id=${reserva.vaga_id}, resultado:`, updateResult);
 
   await execute('DELETE FROM reservas WHERE reserva_id = ?', [reserva_id]);
   await registrarAtividade(
