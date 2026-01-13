@@ -79,6 +79,11 @@ app.use((req, res, next) => {
   if (/\.(css|js|png|jpg|jpeg|svg|ico|map|woff|woff2|ttf|eot|webp|gif)$/i.test(req.path)) return next();
   const role = req.session?.isAdmin ? 'ADMIN' : 'PUBLIC';
   console.log(`${new Date().toLocaleTimeString()} ${req.method} ${req.path} | ${role}`);
+  // Log extra para debug de sessão/cookie
+  if (req.path.startsWith('/admin')) {
+    console.log('Sessão:', req.session);
+    console.log('Cookies recebidos:', req.headers.cookie);
+  }
   next();
 });
 
@@ -103,7 +108,10 @@ app.use('/uploads', (req, res, next) => {
 
 app.use(express.static(publicDir, { maxAge: 86400000, index: 'index.html' }));
 // Servir arquivos de upload (imagens) corretamente em produção
-app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
+app.use('/uploads', (req, res, next) => {
+  console.log(`[IMAGEM] ${req.method} ${req.originalUrl}`);
+  next();
+}, express.static(path.join(projectRoot, 'uploads')));
 app.use('/api', publicRoutes);
 /* ==========================
    ROTAS DE AUTENTICAÇÃO

@@ -29,12 +29,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok) {
                     // Login bem-sucedido - redirecionar para dashboard
+                    console.log('[LOGIN] Sucesso:', data);
                     showMessage('success', 'Login realizado com sucesso! Redirecionando...');
                     setTimeout(() => {
                         window.location.href = '/admin/dashboard';
                     }, 1000);
                 } else {
                     // Erro no login
+                    console.warn('[LOGIN] Falha:', data);
                     showMessage('error', data.error || 'Usuário ou senha incorretos!');
                     loginButton.innerHTML = '<span>Entrar no Painel</span><span><i class="fas fa-arrow-right"></i></span>';
                     loginButton.disabled = false;
