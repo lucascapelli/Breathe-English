@@ -62,11 +62,11 @@ app.use(session({
   store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  cookie: {
+    httpOnly: true,
+    secure: true, // sempre true em produção cloud
+    sameSite: 'none', // obrigatório para cross-domain
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
@@ -100,6 +100,9 @@ app.use('/uploads', (req, res, next) => {
 });
 
 app.use(express.static(publicDir, { maxAge: 86400000, index: 'index.html' }));
+// Servir arquivos de upload (imagens) corretamente em produção
+const projectRoot = path.resolve(__dirname, '..');
+app.use('/uploads', express.static(path.join(projectRoot, 'uploads')));
 app.use('/api', publicRoutes);
 /* ==========================
    ROTAS DE AUTENTICAÇÃO
