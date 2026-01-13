@@ -40,12 +40,14 @@ app.use(express.urlencoded({ extended: true }));
 
 // Política de segurança mínima para scripts inline
 app.use((req, res, next) => {
+
   res.setHeader(
     'Content-Security-Policy',
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
   );
   next();
 });
+
 
 /* ==========================
    SESSÃO
@@ -166,7 +168,11 @@ app.get('/admin', (req, res) => {
 });
 
 app.get('/admin/dashboard', (req, res) => {
-  if (!req.session?.isAdmin) return res.redirect('/admin');
+  if (!req.session?.isAdmin) {
+    console.log('[DASHBOARD] Sessão inválida ou não autenticada:', req.session);
+    console.log('[DASHBOARD] Cookies recebidos:', req.headers.cookie);
+    return res.redirect('/admin');
+  }
   const dashboardPath = path.join(adminDir, 'dashboard.html');
   fs.existsSync(dashboardPath) ? res.sendFile(dashboardPath) : res.status(404).send('Dashboard não encontrado');
 });
