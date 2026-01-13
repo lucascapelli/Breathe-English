@@ -16,6 +16,10 @@ const adminRoutes = require('./adminRoutes');
 const publicRoutes = require('./routes');
 
 const app = express();
+// Necessário para cookies secure funcionarem atrás de proxy (Render, Heroku, etc)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
 const PORT = process.env.PORT || 3000;
 
 /* ==========================
