@@ -17,8 +17,9 @@ function validarCampos(campos, body) {
 function buildFotoUrl(foto) {
   if (!foto) return 'https://placehold.co/100?text=Prof&font=roboto';
   if (/^https?:\/\//.test(foto)) return foto;
-  const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-  return `${baseUrl}${foto}`;
+  const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+  // Garante que não haja duplicidade de barra
+  return `${baseUrl.replace(/\/$/, '')}${foto.startsWith('/') ? foto : '/' + foto}`;
 }
 
 // Query centralizada para pegar vagas ativas
