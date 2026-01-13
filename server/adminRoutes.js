@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('../service/cloudinary');
 
 // =====================
 // CONFIGURAÇÕES GERAIS
@@ -291,26 +292,7 @@ router.post('/reservas/:reserva_id/confirm', async (req, res) => {
 // =====================
 // UPLOAD PROFESSORES
 // =====================
-const fotosDir = path.resolve(__dirname, '..', 'admin', 'uploads', 'professores');
-if (!fs.existsSync(fotosDir)) fs.mkdirSync(fotosDir, { recursive: true });
-
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_, __, cb) => cb(null, fotosDir),
-    filename: (_, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 7)}${ext}`);
-    }
-  }),
-  limits: UPLOAD_CONFIG.limits,
-  fileFilter: (_, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!UPLOAD_CONFIG.allowedFormats.includes(ext)) {
-      return cb(new Error(UPLOAD_CONFIG.errorMessage));
-    }
-    cb(null, true);
-  }
-});
+const upload = multer({ dest: 'tmp/' });
 
 // =====================
 // PROFESSORES (CASCADE)
@@ -323,7 +305,17 @@ router.post('/professores', upload.single('foto'), async (req, res) => {
   const { nome, email, telefone, observacoes, preco } = req.body;
   if (!nome) return res.status(400).json({ error: 'Nome obrigatório' });
 
-  const foto = req.file ? `/uploads/professores/${req.file.filename}` : null;
+  let foto = null;
+  if (req.file) {
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'professores'
+      });
+      foto = result.secure_url;
+    } catch (err) {
+      return res.status(500).json({ error: 'Erro ao enviar imagem para o Cloudinary' });
+    }
+  }
 
   const result = await execute(
     `INSERT INTO professores 
