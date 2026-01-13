@@ -239,10 +239,10 @@ router.get('/reservas', async (_, res) => {
   res.json({ reservas });
 });
 
-router.delete('/reservas/:id', async (req, res) => {
-  const { id } = req.params;
+router.delete('/reservas/:reserva_id', async (req, res) => {
+  const { reserva_id } = req.params;
 
-  const reserva = await get('SELECT * FROM reservas WHERE id = ?', [id]);
+  const reserva = await get('SELECT * FROM reservas WHERE reserva_id = ?', [reserva_id]);
   if (!reserva) return res.status(404).json({ error: 'Reserva não encontrada' });
 
   if (reserva.status === 'confirmada') {
@@ -252,7 +252,7 @@ router.delete('/reservas/:id', async (req, res) => {
     );
   }
 
-  await execute('DELETE FROM reservas WHERE id = ?', [id]);
+  await execute('DELETE FROM reservas WHERE reserva_id = ?', [reserva_id]);
   await registrarAtividade(
     'reserva',
     `Reserva excluída: ${reserva.reserva_id}`,
