@@ -1,6 +1,6 @@
 const express = require('express');
 const { query, get, execute } = require('./database');
-const { enviarEmail } = require('../service/emailService');
+const { sendEmail } = require('../service/emailService');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
@@ -280,7 +280,7 @@ router.post('/reservas/:reserva_id/confirm', async (req, res) => {
   `, [reserva_id]);
 
   if (reserva) {
-    await enviarEmail({
+    await sendEmail({
       to: reserva.email,
       subject: 'Reserva confirmada',
       html: '<p>Sua reserva foi confirmada.</p>'

@@ -1,6 +1,6 @@
 const express = require('express');
 const { query, get, execute } = require('./database');
-const { enviarEmail } = require('../service/emailService');
+const { sendEmail } = require('../service/emailService');
 
 const router = express.Router();
 
@@ -209,7 +209,7 @@ async function enviarNotificacaoReserva(reserva_id, dados, vaga) {
       <p><b>Horário:</b> ${vaga.horario || ''}</p>
     `;
 
-    await enviarEmail({
+    await sendEmail({
       to: adminEmail,
       subject: `📩 Nova reserva – ${vaga.titulo || 'Vaga ' + vaga.id}`,
       html: adminHtml

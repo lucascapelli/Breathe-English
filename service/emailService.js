@@ -1,22 +1,16 @@
-const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-async function enviarEmail({ to, subject, html }) {
-  return transporter.sendMail({
-    from: process.env.SMTP_FROM,
+async function sendEmail({ to, subject, html, text }) {
+  const msg = {
     to,
+    from: process.env.SMTP_FROM.replace(/"/g, ''),
     subject,
-    html
-  });
+    text: text || undefined,
+    html,
+  };
+  return sgMail.send(msg);
 }
 
-module.exports = { enviarEmail };
+module.exports = { sendEmail };
