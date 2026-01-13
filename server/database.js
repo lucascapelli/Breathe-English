@@ -248,16 +248,18 @@ async function criarTabelas() {
 
   const admin = await get(
     'SELECT id FROM administradores WHERE username = ?',
-    ['admin']
+    [process.env.DEFAULT_ADMIN_USER || 'admin']
   );
 
   if (!admin) {
-    const hash = await bcrypt.hash('admin123', 10);
+    const defaultAdminUser = process.env.DEFAULT_ADMIN_USER || 'admin';
+    const defaultAdminPass = process.env.DEFAULT_ADMIN_PASS || 'admin123';
+    const hash = await bcrypt.hash(defaultAdminPass, 10);
     await execute(
       `INSERT INTO administradores 
        (username, password_hash, nome, email, is_super_admin)
        VALUES (?, ?, ?, ?, 1)`,
-      ['admin', hash, 'Administrador', process.env.ADMIN_EMAIL || 'admin@exemplo.com']
+      [defaultAdminUser, hash, 'Administrador', process.env.ADMIN_EMAIL || 'admin@exemplo.com']
     );
     warn('Admin padrão criado (admin / admin123)');
   }
