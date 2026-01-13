@@ -20,36 +20,37 @@
 </head>
 
 <body>
-    <!-- Header com contador de tempo -->
     <div class="container">
-        <div class="header">
-            <div class="urgency-badge">
-                <i class="fas fa-clock"></i>
-                <span class="urgency-text">OFERTA POR TEMPO LIMITADO</span>
-            </div>
-            <h1>📚 Vagas LIMITADAS para Aulas de Inglês</h1>
-            <p class="subtitle">Reserve seu horário agora mesmo - Últimas oportunidades antes do aumento de preço!</p>
-
-            <div class="social-proof">
-                <div class="stats">
-                    <div class="stat-item">
-                        <span class="stat-number">+500</span>
-                        <span class="stat-label">Alunos</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">98%</span>
-                        <span class="stat-label">Aprovação</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">4.9</span>
-                        <span class="stat-label">⭐ Avaliação</span>
+        <header class="main-hero">
+            <div class="main-hero-content">
+                <div class="urgency-badge soft-badge">
+                    <i class="fas fa-clock"></i>
+                    <span class="urgency-text">Oferta por tempo limitado</span>
+                </div>
+                <h1 class="main-title">Aulas de Inglês <span class="highlight">com vagas limitadas</span></h1>
+                <p class="subtitle">Garanta sua vaga e aprenda inglês de verdade, com acompanhamento personalizado.</p>
+                <a href="#vagasGrid" class="cta-btn">Quero reservar minha vaga</a>
+                <div class="social-proof">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <span class="stat-number">+500</span>
+                            <span class="stat-label">Alunos</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">98%</span>
+                            <span class="stat-label">Aprovação</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">4.9</span>
+                            <span class="stat-label">⭐ Avaliação</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
 
         <!-- Contador regressivo -->
-        <div class="countdown-container">
+        <div class="countdown-container modern-countdown">
             <div class="countdown-title">
                 <i class="fas fa-hourglass-half"></i>
                 <span>Vagas disponíveis por tempo limitado:</span>
@@ -109,22 +110,20 @@
         </section>
 
         <!-- Dashboard principal -->
-        <div class="dashboard">
+        <div class="dashboard modern-dashboard">
             <div class="dashboard-header">
                 <div class="total-vagas">
                     <i class="fas fa-chart-bar"></i>
                     <span>Vagas disponíveis: <strong id="totalVagas">0</strong></span>
                 </div>
-                <div class="countdown-warning">
+                <div class="countdown-warning soft-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    URGENTE: VAGAS ESTÃO ACABANDO!
+                    Últimas vagas!
                 </div>
             </div>
-
             <div class="vagas-grid" id="vagasGrid">
                 <!-- Vagas serão geradas via JavaScript -->
             </div>
-
             <div class="pricing-info">
                 <i class="fas fa-info-circle"></i>
                 <span>Todos os preços garantem aulas de conversação</span>
